@@ -1,4 +1,7 @@
 import { useState } from 'react';
+
+import { rules } from '@/components/RuleTable/mocks';
+import { RuleTable } from '@/components/RuleTable/ui';
 import './HomePage.scss';
 
 export const HomePage = () => {
@@ -6,7 +9,7 @@ export const HomePage = () => {
   console.log('ivan');
   return (
     <main className="main-block">
-      <p>Здарова</p>
+      <RuleTable rows={rules} />
     </main>
   );
 };
