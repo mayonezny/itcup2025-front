@@ -23,6 +23,7 @@
     ]
   },
   "dependencies": {
+    "@radix-ui/themes": "^3.2.1",
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.12.2",
     "modern-normalize": "^3.0.1",
