@@ -44,7 +44,7 @@
   
 
   /* Семантические токены */
-  --color-bg: var(--white);
+  --color-bg: var(--gray-50);
   --color-surface: var(--gray-25);
   --color-surface-2: var(--gray-50);
   --color-text: var(--gray-900);
@@ -180,6 +180,10 @@ body,
 #root {
   height: 100%;
   width: 100%;
+}
+
+body > div{
+  background-color: inherit;
 }
 
 #root{
