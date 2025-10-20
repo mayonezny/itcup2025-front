@@ -13,11 +13,16 @@
   --orange-200: #fed7aa;
   --orange-300: #fdba74;
   --orange-400: #fb923c;
-  --orange-500: #f97316; /* base */
+  --orange-500: #F76B15; /* base */
   --orange-600: #ea580c;
   --orange-700: #c2410c;
   --orange-800: #9a3412;
   --orange-900: #7c2d12;
+
+
+  --blue-gradient: linear-gradient(to right, #000059, #1ba6cc);
+
+  --orange-gradient: linear-gradient(to right, var(--orange-400), var(--orange-500));
 
   --gray-25: #fcfcfd;
   --gray-50: #f9fafb;
@@ -33,6 +38,11 @@
   --black: #0b0f14;
   --white: #ffffff;
 
+  --saira: "Saira", sans-serif;
+  --roboto: "Roboto Flex", sans-serif;
+  --pt-sans: "PT Sans", sans-serif;
+  
+
   /* Семантические токены */
   --color-bg: var(--white);
   --color-surface: var(--gray-25);
@@ -46,6 +56,12 @@
   --color-primary-active: var(--orange-700);
   --color-primary-ghost: color-mix(in oklab, var(--orange-500) 12%, transparent);
   --color-primary-weak: color-mix(in oklab, var(--orange-500) 6%, transparent);
+
+  --bg-header: var(--orange-gradient);
+  --header-text: var(--white);
+
+  --header-font: var(--roboto);
+  --main-font: var(--pt-sans);
 
   --color-success: #16a34a;
   --color-warning: #f59e0b;
@@ -193,6 +209,10 @@ body{
   line-height: 1.5;
   background: var(--color-bg);
   color: var(--color-text);
+}
+
+h1,h2,h3,h4,h5,h6,p { 
+  margin: 0; 
 }
 
 img,
