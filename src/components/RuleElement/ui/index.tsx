@@ -1,7 +1,19 @@
-import { Plus, SquareCheckBig, SquarePen, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  SquareArrowDown,
+  SquareArrowUp,
+  SquareCheckBig,
+  SquarePen,
+  Trash2,
+} from 'lucide-react';
 
 import { useAppDispatch } from '@/redux-rtk/hooks';
-import { addRule, deleteRule, updateRule } from '@/redux-rtk/store/rules/rulesSlice';
+import {
+  addRule,
+  changePriority,
+  deleteRule,
+  updateRule,
+} from '@/redux-rtk/store/rules/rulesSlice';
 import { InlineEditableRS } from '@/shared/InlineEditable';
 
 import type { Rule as RuleElementProps } from '../types';
@@ -16,6 +28,7 @@ export const RuleElementHead = () => (
   <div className="head rule-element">
     <div className="num">#</div>
     <div className="rule">Правило</div>
+    <div className="priority">Приоритет</div>
     <div className="type">Тип</div>
     <div className="delete-icon" />
     <div className="edit-icon" />
@@ -30,7 +43,7 @@ export const RuleElement: React.FC<
     isNew?: boolean;
     state?: elemState;
   }
-> = ({ id, rule, type, isEditable, isNew, state = 'view' }) => {
+> = ({ id, rule, priority, type, isEditable, isNew, state = 'view' }) => {
   const dispatch = useAppDispatch();
   const [elemState, setElemState] = React.useState<elemState>(state);
   const [editableState, setEditableState] = React.useState(isEditable || false);
@@ -42,13 +55,21 @@ export const RuleElement: React.FC<
   };
 
   const handleAdd = () => {
-    dispatch(addRule({ rule: ruleState, type }));
+    dispatch(addRule({ rule: ruleState, priority, type }));
     setElemState('new');
     clearInputs();
   };
   const handleUpdate = () => {
     dispatch(updateRule({ id, changes: { rule: ruleState } }));
     setEditableState(false);
+  };
+
+  const handlePriorityUp = () => {
+    dispatch(changePriority({ id, priority: priority - 1 }));
+  };
+
+  const handlePriorityDown = () => {
+    dispatch(changePriority({ id, priority: priority + 1 }));
   };
 
   const handleDelete = () => {
@@ -69,6 +90,9 @@ export const RuleElement: React.FC<
           onClick={handleActivateEditing}
         />
       </div>
+      <div className="priority">{priority}</div>
+      <SquareArrowUp size={56} onClick={handlePriorityUp} />
+      <SquareArrowDown size={56} onClick={handlePriorityDown} />
       <div className="type">{type}</div>
       <button className="delete-icon" onClick={handleDelete}>
         <Trash2 />

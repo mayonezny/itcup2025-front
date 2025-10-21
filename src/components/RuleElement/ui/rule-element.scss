@@ -33,8 +33,13 @@
             white-space: nowrap;
         }
     }
-    .type{
+    .priority{
         flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+    .type{
+        flex: 0.8;
     }
     .delete-icon{
         flex: 0.3;

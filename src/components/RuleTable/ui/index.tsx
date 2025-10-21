@@ -1,9 +1,10 @@
+import React from 'react';
+
 import { RuleElement, RuleElementHead } from '@/components/RuleElement';
 import { LinedText } from '@/shared/LinedText';
 
 import { useRuleTable } from '../api';
 
-import React from 'react';
 import './rule-table.scss';
 
 export const RuleTable = () => {
@@ -32,6 +33,7 @@ export const RuleTable = () => {
         state={'new'}
         id={rules.length + 1}
         rule={''}
+        priority={0}
         type={'Composite'}
       />
     </div>
