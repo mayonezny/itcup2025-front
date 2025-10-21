@@ -1,4 +1,4 @@
-import { SquareCheckBig, SquarePen, Trash2 } from 'lucide-react';
+import { Plus, SquareCheckBig, SquarePen, Trash2 } from 'lucide-react';
 
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import { addRule, deleteRule, updateRule } from '@/redux-rtk/store/rules/rulesSlice';
@@ -95,8 +95,8 @@ export const RuleElement: React.FC<
       )}
     </div>
   ) : (
-    <div className="rule-element" onClick={() => setElemState('view')}>
-      Добавить еще
+    <div className="add rule-element" onClick={() => setElemState('view')}>
+      <Plus size={28} strokeWidth={3} /> Добавить правило
     </div>
   );
 };

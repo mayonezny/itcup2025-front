@@ -1,7 +1,7 @@
 import {
-  RuleElement,
-  RuleElementHead,
-  type Rule as RuleElementProps,
+    RuleElement,
+    RuleElementHead,
+    type Rule as RuleElementProps,
 } from '@/components/RuleElement';
 
 import { useRuleTable } from '../api';
@@ -17,7 +17,10 @@ export const RuleTable = () => {
       {rules.length > 0 ? (
         rules.map((row: RuleElementProps) => <RuleElement key={row.id} {...row} />)
       ) : (
-        <div>Правил нет</div>
+        <div className="norules">
+          <img src="/not-for-production.jpg" width={320} height={320} />
+          <h2>На данный момент никаких правил не задано {':(('}</h2>
+        </div>
       )}
       <RuleElement
         isEditable

@@ -14,7 +14,6 @@
 
     border-radius: var(--radius);
     border: 1px solid var(--color-border);
-    margin-bottom: var(--space-5);
     height: 50px;
 
     .num{
@@ -49,4 +48,22 @@
     .confirm{
         color: var(--color-success);
     }
+}
+
+.add{
+    
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    gap: var(--space-2);
+    max-width: fit-content;
+
+    border-width: 2px;
+    padding: var(--pad-md);
+
+    font-weight: 600;
+    cursor: pointer;
+    font-size: calc(var(--fs-md) + 1px);
+
+    color: var(--color-text-brighter);
 }

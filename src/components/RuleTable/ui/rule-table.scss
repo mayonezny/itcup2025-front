@@ -3,9 +3,17 @@
     width: 70%;
     display: flex;
     flex-direction: column;
+    gap: var(--space-5);
     border-radius: var(--radius);
-    h1{
-        margin-bottom: var(--space-6);
+    .norules{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+        align-self: center;
+        color: var(--color-text-muted-2);
+    }
+    h1, h2{
         font-family: var(--roboto);
     }
 
