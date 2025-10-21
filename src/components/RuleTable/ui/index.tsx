@@ -3,6 +3,7 @@ import {
     RuleElementHead,
     type Rule as RuleElementProps,
 } from '@/components/RuleElement';
+import { LinedText } from '@/shared/LinedText';
 
 import { useRuleTable } from '../api';
 
@@ -31,6 +32,7 @@ export const RuleTable = () => {
         rule={''}
         type={'Composite'}
       />
+      <LinedText As="h4">AND</LinedText>
     </div>
   );
 };

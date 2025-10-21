@@ -1,0 +1,30 @@
+.with-lines {
+  /* настраиваемые переменные */
+  --line-color: currentColor;
+  --line-thickness: 2px;
+  --gap: 12px;           /* отступы между словом и линиями */
+  --baseline-shift: .25em; /* опустить линии к «подчёркиванию» */
+
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin: 0;            /* отключаем дефолтные margin h4 */
+  line-height: 1.2;
+
+  color: var(--color-text-muted-2);
+}
+
+.with-lines::before,
+.with-lines::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 0;
+  border-bottom: var(--line-thickness) solid var(--line-color);
+  transform: translateY(var(--baseline-shift)); /* чтоб линия шла «как подчёркивание» */
+}
+
+.with-lines > span {
+  white-space: nowrap;  /* чтобы слово не ломалось */
+  /* опционально чуть приподнять слово относительно линии:
+     transform: translateY(-1px); */
+}
