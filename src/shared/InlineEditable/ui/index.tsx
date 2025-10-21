@@ -7,11 +7,13 @@ export function InlineEditableRS({
   onCommit,
   placeholder = '—',
   className,
+  onClick,
 }: {
   value: string;
   onCommit: (v: string) => void;
   placeholder?: string;
   className?: string;
+  onClick: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -43,6 +45,7 @@ export function InlineEditableRS({
         onClick={(e) => {
           e.stopPropagation();
           setEditing(true);
+          onClick();
         }}
         title="Нажмите, чтобы изменить"
       >

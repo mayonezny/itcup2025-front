@@ -26,7 +26,7 @@ export const RuleTable = () => {
         id={rules.length + 1}
         name={''}
         rule={''}
-        type={''}
+        type={'Composite'}
       />
     </div>
   );

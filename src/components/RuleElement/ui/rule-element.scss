@@ -44,6 +44,9 @@
     }
     .edit-icon{
         flex: 0.3;
+        color: var(--color-text);
+    }
+    .confirm{
         color: var(--color-success);
     }
 }

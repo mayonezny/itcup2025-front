@@ -1,4 +1,4 @@
-import { SquareCheckBig, Trash2 } from 'lucide-react';
+import { SquareCheckBig, SquarePen, Trash2 } from 'lucide-react';
 
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import { addRule, deleteRule, updateRule } from '@/redux-rtk/store/rules/rulesSlice';
@@ -34,6 +34,7 @@ export const RuleElement: React.FC<
 > = ({ id, name, rule, type, isEditable, isNew, state = 'view' }) => {
   const dispatch = useAppDispatch();
   const [elemState, setElemState] = React.useState<elemState>(state);
+  const [editableState, setEditableState] = React.useState(isEditable || false);
 
   const [nameState, setNameState] = React.useState(name);
   const [ruleState, setRuleState] = React.useState(rule);
@@ -50,27 +51,45 @@ export const RuleElement: React.FC<
   };
   const handleUpdate = () => {
     dispatch(updateRule({ id, changes: { name: nameState, rule: ruleState } }));
-    clearInputs();
+    setEditableState(false);
   };
 
   const handleDelete = () => {
     dispatch(deleteRule({ id }));
   };
+
+  const handleActivateEditing = () => {
+    setEditableState(true);
+  };
+
   return elemState === 'view' ? (
     <div className="rule-element">
       <div className="num">{id}</div>
-      <div className="name">
-        <InlineEditableRS value={nameState} onCommit={(v) => setNameState(v)} />
+      <div className="name" onClick={() => setEditableState(true)}>
+        <InlineEditableRS
+          value={nameState}
+          onCommit={(v) => setNameState(v)}
+          onClick={handleActivateEditing}
+        />
       </div>
-      <div className="rule">
-        <InlineEditableRS value={ruleState} onCommit={(v) => setRuleState(v)} />
+      <div className="rule" onClick={() => setEditableState(true)}>
+        <InlineEditableRS
+          value={ruleState}
+          onCommit={(v) => setRuleState(v)}
+          onClick={handleActivateEditing}
+        />
       </div>
       <div className="type">{type}</div>
       <button className="delete-icon" onClick={handleDelete}>
         <Trash2 />
       </button>
-      {isEditable && (
-        <button className="edit-icon" onClick={isNew ? handleAdd : handleUpdate}>
+      {!editableState && elemState === 'view' && (
+        <button className="edit-icon" onClick={() => setEditableState(true)}>
+          <SquarePen />
+        </button>
+      )}
+      {editableState && (
+        <button className="confirm edit-icon" onClick={isNew ? handleAdd : handleUpdate}>
           <SquareCheckBig />
         </button>
       )}
