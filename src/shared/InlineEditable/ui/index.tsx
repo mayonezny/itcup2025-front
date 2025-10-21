@@ -8,14 +8,16 @@ export function InlineEditableRS({
   placeholder = '—',
   className,
   onClick,
+  isEditing,
 }: {
   value: string;
   onCommit: (v: string) => void;
   placeholder?: string;
   className?: string;
   onClick: () => void;
+  isEditing?: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(isEditing);
   const [draft, setDraft] = useState(value);
   const ref = useRef<HTMLInputElement>(null);
 

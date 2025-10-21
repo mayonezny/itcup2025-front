@@ -17,14 +17,19 @@
     height: 50px;
 
     .num{
-        flex: 0.5;
+        width: 3%;
+        display: flex;
+        justify-content: center;
+        padding: 0;
     }
-    .name{
-        flex: 2;
-        min-width: 0;
+    .num:hover{
+        background-color: transparent;
+    }
+    button{
+        padding: var(--pad-xs);
     }
     .rule{
-        flex: 5;
+        width: 60%;
         min-width: 0;
         > *{
             max-width: 90%;
@@ -33,21 +38,25 @@
             white-space: nowrap;
         }
     }
-    .priority{
-        flex: 1;
+
+    .type{
+        width: 10%;
+    }
+    .rule-element-icons{
         display: flex;
         justify-content: center;
+        width: 27%;
     }
-    .type{
-        flex: 0.8;
+    .priorities-icons{
+        display: flex;
+        justify-content: center;
+        margin-right: var(--space-4);
     }
     .delete-icon{
-        flex: 0.3;
-        margin-right: var(--space-2);
         color: var(--color-danger);
     }
     .edit-icon{
-        flex: 0.3;
+
         color: var(--color-text);
     }
     .confirm{
@@ -71,4 +80,7 @@
     font-size: calc(var(--fs-md) + 1px);
 
     color: var(--color-text-brighter);
+}
+.add:hover{
+    background-color: var(--gray-100);
 }

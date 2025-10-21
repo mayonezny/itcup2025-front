@@ -1,18 +1,18 @@
 import {
-  Plus,
-  SquareArrowDown,
-  SquareArrowUp,
-  SquareCheckBig,
-  SquarePen,
-  Trash2,
+    Plus,
+    SquareArrowDown,
+    SquareArrowUp,
+    SquareCheckBig,
+    SquarePen,
+    Trash2,
 } from 'lucide-react';
 
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import {
-  addRule,
-  changePriority,
-  deleteRule,
-  updateRule,
+    addRule,
+    changePriority,
+    deleteRule,
+    updateRule,
 } from '@/redux-rtk/store/rules/rulesSlice';
 import { InlineEditableRS } from '@/shared/InlineEditable';
 
@@ -26,14 +26,15 @@ type elemState = 'view' | 'edit' | 'new';
 
 export const RuleElementHead = () => (
   <div className="head rule-element">
-    <div className="num">#</div>
+    <button className="num" title="Приоритет">
+      #
+    </button>
     <div className="rule">Правило</div>
-    <div className="priority">Приоритет</div>
     <div className="type">Тип</div>
     <div className="delete-icon" />
     <div className="edit-icon" />
     <div className="edit-icon" />
-    <div className="edit-icon" />
+    <div className="priorities-icons" />
   </div>
 );
 
@@ -82,31 +83,50 @@ export const RuleElement: React.FC<
 
   return elemState === 'view' ? (
     <div className="rule-element">
-      <div className="num">{id}</div>
+      <div className="num">{priority}</div>
       <div className="rule" onClick={() => setEditableState(true)}>
         <InlineEditableRS
           value={ruleState}
           onCommit={(v) => setRuleState(v)}
           onClick={handleActivateEditing}
+          isEditing={editableState}
         />
       </div>
-      <div className="priority">{priority}</div>
-      <SquareArrowUp size={56} onClick={handlePriorityUp} />
-      <SquareArrowDown size={56} onClick={handlePriorityDown} />
       <div className="type">{type}</div>
-      <button className="delete-icon" onClick={handleDelete}>
-        <Trash2 />
-      </button>
-      {!editableState && elemState === 'view' && (
-        <button className="edit-icon" onClick={() => setEditableState(true)}>
-          <SquarePen />
+      <div className="rule-element-icons">
+        {!editableState && (
+          <div className="priorities-icons">
+            <button onClick={handlePriorityUp} title="Повысить приоритет">
+              <SquareArrowUp />
+            </button>
+            <button onClick={handlePriorityDown} title="Понизить приоритет">
+              <SquareArrowDown />
+            </button>
+          </div>
+        )}
+
+        <button className="delete-icon" onClick={handleDelete} title="Удалить правило">
+          <Trash2 />
         </button>
-      )}
-      {editableState && (
-        <button className="confirm edit-icon" onClick={isNew ? handleAdd : handleUpdate}>
-          <SquareCheckBig />
-        </button>
-      )}
+        {!editableState && elemState === 'view' && (
+          <button
+            className="edit-icon"
+            onClick={() => setEditableState(true)}
+            title="Редактировать правило"
+          >
+            <SquarePen />
+          </button>
+        )}
+        {editableState && (
+          <button
+            className="confirm edit-icon"
+            onClick={isNew ? handleAdd : handleUpdate}
+            title="Подтвердить редактирование"
+          >
+            <SquareCheckBig />
+          </button>
+        )}
+      </div>
     </div>
   ) : (
     <div className="add rule-element" onClick={() => setElemState('view')}>
