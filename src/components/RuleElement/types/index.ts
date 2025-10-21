@@ -1,4 +1,4 @@
-export interface RuleElementProps {
+export interface Rule {
   id: number;
   name: string;
   rule: string;

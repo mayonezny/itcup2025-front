@@ -15,18 +15,19 @@
     border-radius: var(--radius);
     border: 1px solid var(--color-border);
     margin-bottom: var(--space-5);
-
+    height: 50px;
 
     .num{
         flex: 0.5;
     }
     .name{
         flex: 2;
+        min-width: 0;
     }
     .rule{
         flex: 5;
         min-width: 0;
-        >div{
+        > *{
             max-width: 90%;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -41,8 +42,8 @@
         margin-right: var(--space-2);
         color: var(--color-danger);
     }
-    .drag-icon{
+    .edit-icon{
         flex: 0.3;
-        color: var(--color-text);
+        color: var(--color-success);
     }
 }
