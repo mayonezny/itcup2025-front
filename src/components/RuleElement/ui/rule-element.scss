@@ -3,6 +3,7 @@
     font-weight: 600;
 }
 .rule-element{
+    min-width: 20%;
     display: flex;
     align-items: center;
 
@@ -28,8 +29,8 @@
     button{
         padding: var(--pad-xs);
     }
-    .rule{
-        width: 60%;
+    .rule, .ex{
+        width: 35%;
         min-width: 0;
         > *{
             max-width: 90%;
@@ -38,14 +39,13 @@
             white-space: nowrap;
         }
     }
-
-    .type{
-        width: 10%;
+    .rule{
+        width:45%;
     }
     .rule-element-icons{
         display: flex;
-        justify-content: center;
-        width: 27%;
+        margin-left: auto;
+        padding-right: var(--pad-md);
     }
     .priorities-icons{
         display: flex;

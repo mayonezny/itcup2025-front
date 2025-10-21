@@ -30,7 +30,7 @@ export const RuleElementHead = () => (
       #
     </button>
     <div className="rule">Правило</div>
-    <div className="type">Тип</div>
+    <div className="ex">Исключение</div>
     <div className="delete-icon" />
     <div className="edit-icon" />
     <div className="edit-icon" />
@@ -44,24 +44,26 @@ export const RuleElement: React.FC<
     isNew?: boolean;
     state?: elemState;
   }
-> = ({ id, rule, priority, type, isEditable, isNew, state = 'view' }) => {
+> = ({ id, rule, priority, exclusion, isEditable, isNew, state = 'view' }) => {
   const dispatch = useAppDispatch();
   const [elemState, setElemState] = React.useState<elemState>(state);
   const [editableState, setEditableState] = React.useState(isEditable || false);
 
   const [ruleState, setRuleState] = React.useState(rule);
+  const [exState, setExState] = React.useState(exclusion);
 
   const clearInputs = () => {
     setRuleState('');
+    setExState('');
   };
 
   const handleAdd = () => {
-    dispatch(addRule({ rule: ruleState, priority, type }));
+    dispatch(addRule({ rule: ruleState, priority, exclusion: exState }));
     setElemState('new');
     clearInputs();
   };
   const handleUpdate = () => {
-    dispatch(updateRule({ id, changes: { rule: ruleState } }));
+    dispatch(updateRule({ id, changes: { rule: ruleState, exclusion: exState } }));
     setEditableState(false);
   };
 
@@ -92,7 +94,14 @@ export const RuleElement: React.FC<
           isEditing={editableState}
         />
       </div>
-      <div className="type">{type}</div>
+      <div className="ex" onClick={() => setEditableState(true)}>
+        <InlineEditableRS
+          value={exState}
+          onCommit={(v) => setExState(v)}
+          onClick={handleActivateEditing}
+          isEditing={editableState}
+        />
+      </div>
       <div className="rule-element-icons">
         {!editableState && (
           <div className="priorities-icons">

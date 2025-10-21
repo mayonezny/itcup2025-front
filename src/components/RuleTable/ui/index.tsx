@@ -34,7 +34,7 @@ export const RuleTable = () => {
         id={rules.length + 1}
         rule={''}
         priority={0}
-        type={'Composite'}
+        exclusion={''}
       />
     </div>
   );
