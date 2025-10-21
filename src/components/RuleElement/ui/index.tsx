@@ -15,7 +15,6 @@ type elemState = 'view' | 'edit' | 'new';
 export const RuleElementHead = () => (
   <div className="head rule-element">
     <div className="num">#</div>
-    <div className="name">Имя правила</div>
     <div className="rule">Правило</div>
     <div className="type">Тип</div>
     <div className="delete-icon" />
@@ -31,26 +30,24 @@ export const RuleElement: React.FC<
     isNew?: boolean;
     state?: elemState;
   }
-> = ({ id, name, rule, type, isEditable, isNew, state = 'view' }) => {
+> = ({ id, rule, type, isEditable, isNew, state = 'view' }) => {
   const dispatch = useAppDispatch();
   const [elemState, setElemState] = React.useState<elemState>(state);
   const [editableState, setEditableState] = React.useState(isEditable || false);
 
-  const [nameState, setNameState] = React.useState(name);
   const [ruleState, setRuleState] = React.useState(rule);
 
   const clearInputs = () => {
-    setNameState('');
     setRuleState('');
   };
 
   const handleAdd = () => {
-    dispatch(addRule({ name: nameState, rule: ruleState, type }));
+    dispatch(addRule({ rule: ruleState, type }));
     setElemState('new');
     clearInputs();
   };
   const handleUpdate = () => {
-    dispatch(updateRule({ id, changes: { name: nameState, rule: ruleState } }));
+    dispatch(updateRule({ id, changes: { rule: ruleState } }));
     setEditableState(false);
   };
 
@@ -65,13 +62,6 @@ export const RuleElement: React.FC<
   return elemState === 'view' ? (
     <div className="rule-element">
       <div className="num">{id}</div>
-      <div className="name" onClick={() => setEditableState(true)}>
-        <InlineEditableRS
-          value={nameState}
-          onCommit={(v) => setNameState(v)}
-          onClick={handleActivateEditing}
-        />
-      </div>
       <div className="rule" onClick={() => setEditableState(true)}>
         <InlineEditableRS
           value={ruleState}

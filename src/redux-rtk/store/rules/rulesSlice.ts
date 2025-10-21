@@ -21,7 +21,6 @@ const rulesSlice = createSlice({
       const nextId = (_state.reduce((m, r) => Math.max(m, r.id), 0) || 0) + 1;
       _state.push({
         id: nextId,
-        name: action.payload.name,
         rule: action.payload.rule,
         type: action.payload.type,
       });
