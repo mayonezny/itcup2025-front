@@ -23,12 +23,11 @@ export function InlineEditableRS({
 }) {
   const [editing, setEditing] = useState(isEditing);
   const [draft, setDraft] = useState(value);
-  const [errors, setErrors] = useState<UiDiag[]>([]);
+  const [errors /*, setErrors*/] = useState<UiDiag[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [sel, setSel] = useState(0);
   const ref = useRef<HTMLInputElement>(null);
-  const timer = useRef<number | null>(null);
 
   async function refreshSuggestions() {
     const caret = ref.current?.selectionStart ?? draft.length;
@@ -53,10 +52,6 @@ export function InlineEditableRS({
     if (draft !== value) {
       onCommit(draft);
     }
-    setEditing(false);
-  };
-  const cancel = () => {
-    setDraft(value);
     setEditing(false);
   };
 

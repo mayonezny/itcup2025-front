@@ -24,10 +24,12 @@
     ]
   },
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.12.2",
     "lucide-react": "^0.546.0",
     "modern-normalize": "^3.0.1",
+    "msw": "^2.11.6",
     "path": "^0.12.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -61,5 +63,10 @@
     "vite": "^7.1.2",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-languageserver-types": "^3.17.5"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

@@ -1,0 +1,15 @@
+/* src/features/transactions/transactions-table.scss */
+.tx-table { display: grid; gap: 12px; }
+.tx-toolbar { display: flex; justify-content: space-between; align-items: center; }
+.table { border: 1px solid var(--grey-borderline); border-radius: 8px; overflow: hidden; }
+.thead, .row { display: grid; grid-template-columns: 70px 170px 160px 160px 100px 120px 140px 120px 140px 120px 80px; gap: 8px; align-items: center; padding: 8px 12px; }
+.thead { background: var(--white-hover); font-weight: 600; }
+.tbody .row:nth-child(odd) { background: var(--white-hover); }
+.row.muted { color: #666; padding: 12px; }
+.row.error { color: #b91c1c; padding: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.badge { padding: 2px 8px; border-radius: 999px; text-align: center; }
+.badge.good { background: #e7f7ee; color: #065f46; }
+.badge.bad  { background: #fee2e2; color: #991b1b; }
+.tx-pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+.tx-pager button { padding: 4px 8px; }
