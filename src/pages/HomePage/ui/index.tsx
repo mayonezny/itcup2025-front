@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
 import { RuleTable } from '@/components/RuleTable/ui';
+
 import './HomePage.scss';
+import { RulePlayground } from './RulePlayground';
 
 export const HomePage = () => {
   const [count, setCount] = useState(0);
@@ -9,6 +11,7 @@ export const HomePage = () => {
   return (
     <main className="main-block">
       <RuleTable />
+      <RulePlayground />
     </main>
   );
 };

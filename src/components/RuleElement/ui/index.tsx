@@ -1,18 +1,18 @@
 import {
-    Plus,
-    SquareArrowDown,
-    SquareArrowUp,
-    SquareCheckBig,
-    SquarePen,
-    Trash2,
+  Plus,
+  SquareArrowDown,
+  SquareArrowUp,
+  SquareCheckBig,
+  SquarePen,
+  Trash2,
 } from 'lucide-react';
 
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import {
-    addRule,
-    changePriority,
-    deleteRule,
-    updateRule,
+  addRule,
+  changePriority,
+  deleteRule,
+  updateRule,
 } from '@/redux-rtk/store/rules/rulesSlice';
 import { InlineEditableRS } from '@/shared/InlineEditable';
 
