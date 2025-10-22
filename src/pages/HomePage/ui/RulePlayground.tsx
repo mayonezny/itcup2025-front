@@ -1,51 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Panel } from 'rsuite';
 
 import { InlineEditableRS } from '@/shared/InlineEditable/ui';
-import { parseRuleToJson, validateRule } from '@/shared/lang/api';
+import { buildRules, type Diagnostic } from '@/shared/lang/api';
 
 export function RulePlayground() {
   const [expr, setExpr] = useState(
     '(COUNT >= 50000 AND TIME BETWEEN [00:00:00, 12:30:00]) OR (COUNT <= 500)',
   );
   const [excl, setExcl] = useState('TIME NOT BETWEEN [00:00:00, 06:00:00]');
-  const [errors, setErrors] = useState<string[]>([]);
-  const [json, setJson] = useState<unknown>(null);
+  const [errors, setErrors] = useState<Diagnostic[]>([]);
+  const [json, setJson] = useState<unknown>();
   const [loading, setLoading] = useState(false);
 
-  // валидируем expression на лету
-  useEffect(() => {
-    let keep = true;
-    (async () => {
-      const diags = await validateRule(expr);
-      if (!keep) {
-        return;
-      }
-      setErrors(diags.filter((d) => d.severity === 'error').map((d) => d.message));
-    })();
-    return () => {
-      keep = false;
-    };
-  }, [expr]);
-
-  const hasErrors = errors.length > 0;
-
   const build = async () => {
-    //
     setLoading(true);
-    try {
-      const out = await parseRuleToJson(expr, excl);
-      setJson(out);
-    } catch (e: unknown) {
-      setJson({
-        error:
-          typeof e === 'object' && e !== null && 'message' in e
-            ? (e as { message: string }).message
-            : String(e),
-      });
-    } finally {
-      setLoading(false);
+    const res = await buildRules(expr, excl);
+    if (res.ok) {
+      setJson(res.json);
+      setErrors([]);
+    } else {
+      setJson(undefined);
+      setErrors(res.errors);
     }
+    setLoading(false);
   };
 
   return (
@@ -61,7 +39,6 @@ export function RulePlayground() {
           onClick={() => {}}
           isEditing
         />
-        {hasErrors && <div style={{ color: '#dc2626', marginTop: 8 }}>{errors[0]}</div>}
       </Panel>
 
       <Panel bordered header="Exclusion (опционально)">
@@ -75,7 +52,18 @@ export function RulePlayground() {
         />
       </Panel>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {errors.length > 0 && (
+          <div style={{ color: '#dc2626', fontSize: 13 }}>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {errors.map((e, i) => (
+                <li key={i} style={{ color: '#dc2626', fontSize: 13, lineHeight: 1.35 }}>
+                  {e.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Button appearance="primary" onClick={build} loading={loading}>
           Собрать JSON
         </Button>

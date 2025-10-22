@@ -1,11 +1,11 @@
 // src/shared/lang/fraud-services.ts
 import {
-    createDefaultCoreModule,
-    createDefaultSharedCoreModule,
-    inject,
-    URI,
-    type FileSystemProvider,
-    type LangiumDocument,
+  createDefaultCoreModule,
+  createDefaultSharedCoreModule,
+  inject,
+  URI,
+  type FileSystemProvider,
+  type LangiumDocument,
 } from 'langium';
 
 import { FraudRulesGeneratedModule, fraudRulesGeneratedSharedModule } from './generated/module.js';

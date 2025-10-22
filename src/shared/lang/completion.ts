@@ -1,101 +1,112 @@
-// src/shared/lang/completion.ts
-const KEYWORDS = ['AND', 'OR', 'NOT', 'BETWEEN'];
-const CMPOPS = ['>=', '>', '<=', '<', '='];
-const SYMBOLS = ['(', ')', '[', ']', ','];
+const KEYWORDS = ['AND', 'OR', 'NOT', 'BETWEEN'] as const;
+const CMPOPS = ['>=', '>', '<=', '<', '='] as const;
+const SYMBOLS = ['(', ')', '[', ']', ','] as const;
+const VARS = ['COUNT', 'TIME'] as const; // можно расширить из конфига
 
-function lastWord(s: string) {
-  const m = s.match(/[A-Z][A-Z0-9_]*$/);
-  return m ? m[0] : '';
+type Suggest = string;
+
+function lastToken(src: string): string {
+  const m = src.match(/([A-Z][A-Z0-9_]*|>=|<=|=|>|<|\(|\)|\[|\]|,)\s*$/);
+  return m ? m[1] : '';
 }
-function lastNonSpaceChar(s: string) {
-  const m = s.match(/\S(?=\s*$)/);
-  return m ? m[0] : '';
+function inBracket(src: string): boolean {
+  const open = (src.match(/\[/g) || []).length;
+  const close = (src.match(/\]/g) || []).length;
+  return open > close;
 }
-function countBalance(s: string, open: string, close: string) {
-  let bal = 0;
-  for (const ch of s) {
-    if (ch === open) {
-      bal++;
-    } else if (ch === close) {
-      bal = Math.max(0, bal - 1);
-    }
-  }
-  return bal;
-}
-function looksLikeTimePrefix(s: string) {
-  return /(?:^|[\s,[])([01]?\d|2[0-3])?:?$/.test(s) || /\d{2}:\d{0,2}$/.test(s);
-}
-function looksLikeNumberPrefix(s: string) {
-  return /(?:^|[\s,[])\d*\.?\d*$/.test(s);
+function inParen(src: string): boolean {
+  const open = (src.match(/\(/g) || []).length;
+  const close = (src.match(/\)/g) || []).length;
+  return open > close;
 }
 
-/** Простые подсказки по offset каретки, без LSP */
-export async function getCompletionsAt(text: string, offset: number): Promise<string[]> {
+export async function getCompletionsAt(text: string, offset: number): Promise<Suggest[]> {
   const left = text.slice(0, offset);
   const right = text.slice(offset);
 
-  const suggestions = new Set<string>();
+  const s = new Set<Suggest>();
 
-  // База
-  KEYWORDS.forEach((k) => suggestions.add(k));
-  CMPOPS.forEach((o) => suggestions.add(o));
-  SYMBOLS.forEach((s) => suggestions.add(s));
+  const tok = lastToken(left);
+  const insideBr = inBracket(left);
+  const insidePar = inParen(left);
 
-  // Баланс скобок → подсказать закрывающие
-  const parenOpen = countBalance(left, '(', ')');
-  if (parenOpen > 0) {
-    suggestions.add(')');
+  // базовые закрывающие
+  if (insidePar && !/^\s*\)/.test(right)) {
+    s.add(')');
   }
-  const bracketOpen = countBalance(left, '[', ']');
-  if (bracketOpen > 0) {
-    suggestions.add(']');
+  if (insideBr && !/^\s*\]/.test(right)) {
+    s.add(']');
   }
 
-  const prevWord = lastWord(left);
-  const prevChar = lastNonSpaceChar(left);
-
-  // После IDENT → операторы сравнения, или NOT/BETWEEN
-  if (prevWord && /^[A-Z]/.test(prevWord)) {
-    CMPOPS.forEach((o) => suggestions.add(o));
-    suggestions.add('NOT');
-    suggestions.add('BETWEEN');
-    suggestions.add('NOT BETWEEN');
-  }
-
-  // После NOT → BETWEEN
-  if (/\bNOT\s*$/i.test(left)) {
-    suggestions.add('BETWEEN');
-  }
-
-  // После BETWEEN → '['
-  if (/\bBETWEEN\s*$/i.test(left)) {
-    suggestions.add('[');
-  }
-
-  // Внутри [ ... ] → значения и запятая
-  if (bracketOpen > 0) {
-    if (!left.includes(',')) {
-      suggestions.add(',');
+  // внутри скобок-values
+  if (insideBr) {
+    // если ещё нет запятой — предложить запятую
+    if (!/\[[^\]]*,/.test(left)) {
+      s.add(',');
     }
-    // Подсказки значений
-    if (looksLikeTimePrefix(left)) {
-      suggestions.add('00:00:00');
-    }
-    if (looksLikeNumberPrefix(left)) {
-      suggestions.add('0');
-    }
+    // значения
+    s.add('00:00:00');
+    s.add('0');
+    return sort(Array.from(s));
   }
 
-  // Если справа уже есть слово/символ — не предлагать конфликтующие пары
-  if (/^\s*\)/.test(right)) {
-    suggestions.delete(')');
-  }
-  if (/^\s*\]/.test(right)) {
-    suggestions.delete(']');
+  // контекст по токену
+  if (!tok) {
+    // начало
+    VARS.forEach((v) => s.add(v));
+    s.add('(');
+    return sort(Array.from(s));
   }
 
-  // Нормализуем и отсортируем: операторы, keywords, скобки
-  const order = (s: string) =>
-    CMPOPS.includes(s) ? 0 : KEYWORDS.includes(s) ? 1 : SYMBOLS.includes(s) ? 2 : 3;
-  return Array.from(suggestions).sort((a, b) => order(a) - order(b) || a.localeCompare(b));
+  if (VARS.includes(tok as any)) {
+    // после переменной — сравнение или (NOT) BETWEEN
+    CMPOPS.forEach((o) => s.add(o));
+    s.add('BETWEEN');
+    s.add('NOT BETWEEN');
+    return sort(Array.from(s));
+  }
+
+  if (tok === 'NOT') {
+    s.add('BETWEEN');
+    return sort(Array.from(s));
+  }
+
+  if (tok === 'BETWEEN' || tok === 'NOT BETWEEN') {
+    s.add('[');
+    return sort(Array.from(s));
+  }
+
+  if (CMPOPS.includes(tok as any)) {
+    // после оператора — значения
+    s.add('0');
+    s.add('00:00:00');
+    return sort(Array.from(s));
+  }
+
+  if (tok === ')' || tok === ']' || /^[0-9]|^\d{2}:\d{2}:?$/.test(tok)) {
+    // после закрытия группы/значения — логические операторы
+    s.add('AND');
+    s.add('OR');
+    return sort(Array.from(s));
+  }
+
+  // дефолт
+  KEYWORDS.forEach((k) => s.add(k));
+  SYMBOLS.forEach((k) => s.add(k));
+  VARS.forEach((v) => s.add(v));
+  return sort(Array.from(s));
+}
+
+function sort(arr: string[]) {
+  const score = (x: string) =>
+    CMPOPS.includes(x as any)
+      ? 0
+      : KEYWORDS.includes(x as any)
+        ? 1
+        : SYMBOLS.includes(x as any)
+          ? 2
+          : VARS.includes(x as any)
+            ? 3
+            : 4;
+  return arr.sort((a, b) => score(a) - score(b) || a.localeCompare(b));
 }
