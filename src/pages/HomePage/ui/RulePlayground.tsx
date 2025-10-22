@@ -31,6 +31,7 @@ export function RulePlayground() {
   const hasErrors = errors.length > 0;
 
   const build = async () => {
+    //
     setLoading(true);
     try {
       const out = await parseRuleToJson(expr, excl);
