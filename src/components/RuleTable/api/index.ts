@@ -2,7 +2,7 @@ import { useAppSelector } from '@/redux-rtk/hooks';
 
 export const useRuleTable = () => {
   //   const dispatch = useAppDispatch();
-  const rules = useAppSelector((state) => state.rulesReducer);
+  const rules = useAppSelector((state) => state.rulesReducer.list);
   //   useEffect(() => {
   //     dispatch(getHistory());
   //   }, [dispatch]);

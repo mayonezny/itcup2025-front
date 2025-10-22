@@ -1,43 +1,180 @@
-import { createSlice, type PayloadAction, type Reducer } from '@reduxjs/toolkit';
+// src/redux-rtk/store/rules/rulesSlice.ts
+import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Rule } from '@/components/RuleElement';
-import { changePriorityInPlace } from '@/shared/utils/priorityChanger';
+import type { BuiltRule, Expression } from '@/shared/lang/types';
 
-export type RulesState = Rule[];
-const initialState: RulesState = [];
+/* ---- Доменные типы ---- */
+
+export interface RulesState {
+  list: Rule[];
+  nextId: number;
+}
+
+const initialState: RulesState = {
+  list: [],
+  nextId: 1,
+};
+
+/* ---- Вспомогалки ---- */
+
+// привести приоритеты к 1..N слева направо
+function reindexPriorities(list: Rule[]): void {
+  list
+    .sort((a, b) => a.priority - b.priority)
+    .forEach((item, idx) => {
+      item.priority = idx + 1;
+    });
+}
+
+// переместить элемент с oldP на newP, остальные сдвинуть
+function movePriority(list: Rule[], id: number, newPriority: number): void {
+  const n = list.length;
+  if (n === 0) {
+    return;
+  }
+
+  const item = list.find((r) => r.id === id);
+  if (!item) {
+    return;
+  }
+
+  const oldPriority = item.priority;
+  const np = Math.max(1, Math.min(n, newPriority));
+  if (np === oldPriority) {
+    return;
+  }
+
+  for (const r of list) {
+    if (r.id === item.id) {
+      continue;
+    }
+    // если поднимаем вверх: [np, old-1] ++
+    if (np < oldPriority && r.priority >= np && r.priority < oldPriority) {
+      r.priority += 1;
+    }
+    // если опускаем вниз: [old+1, np] --
+    if (np > oldPriority && r.priority <= np && r.priority > oldPriority) {
+      r.priority -= 1;
+    }
+  }
+  item.priority = np;
+  // на всякий — нормализуем
+  reindexPriorities(list);
+}
+
+/* ---- Слайс ---- */
 
 const rulesSlice = createSlice({
   name: 'rules',
   initialState,
   reducers: {
-    setRules: (_state, action: PayloadAction<Rule[]>) => action.payload,
-    addRule: (_state, action: PayloadAction<Omit<Rule, 'id'>>) => {
-      const nextId = (_state.reduce((m, r) => Math.max(m, r.id), 0) || 0) + 1;
-      // 1) всем существующим +1
-      _state.forEach((it) => {
-        it.priority += 1;
+    // добавляет в начало (priority = 1), остальных сдвигает вниз
+    addRule: (
+      state,
+      action: PayloadAction<{
+        rule: string;
+        exclusion?: string;
+        compiled: BuiltRule; // уже собранное (валидация прошла в UI)
+      }>,
+    ) => {
+      // сдвинуть существующие вниз
+      for (const r of state.list) {
+        r.priority += 1;
+      }
+
+      state.list.push({
+        id: state.nextId++,
+        rule: action.payload.rule,
+        exclusion: action.payload.exclusion,
+        priority: 1,
+        compiled: action.payload.compiled,
       });
-      // 2) добавить новый с priority=1
-      _state.push({ ...action.payload, priority: 1, id: nextId });
-      // (опционально) держать массив отсортированным по приоритету
-      _state.sort((a, b) => a.priority - b.priority);
+
+      // приводим к 1..N
+      reindexPriorities(state.list);
     },
-    updateRule: (state, action: PayloadAction<{ id: number; changes: Partial<Rule> }>) => {
-      const i = state.findIndex((r) => r.id === action.payload.id);
-      if (i !== -1) {
-        state[i] = { ...state[i], ...action.payload.changes };
+
+    // правки по id; compiled можно прислать заново после успешной сборки
+    updateRule: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        changes: {
+          rule?: string;
+          exclusion?: string;
+          compiled?: BuiltRule;
+        };
+      }>,
+    ) => {
+      const it = state.list.find((r) => r.id === action.payload.id);
+      if (!it) {
+        return;
+      }
+      const { rule, exclusion, compiled } = action.payload.changes;
+      if (typeof rule === 'string') {
+        it.rule = rule;
+      }
+      if (typeof exclusion === 'string') {
+        it.exclusion = exclusion;
+      }
+      if (compiled) {
+        it.compiled = compiled;
       }
     },
-    deleteRule: (state, action: PayloadAction<{ id: number }>) =>
-      state.filter((r) => r.id !== action.payload.id),
 
-    changePriority: (state, action: PayloadAction<{ id: number; priority: number }>) =>
-      changePriorityInPlace(state, action.payload.id, action.payload.priority),
+    // удалить и переиндексировать приоритеты
+    deleteRule: (state, action: PayloadAction<{ id: number }>) => {
+      state.list = state.list.filter((r) => r.id !== action.payload.id);
+      reindexPriorities(state.list);
+    },
 
-    clearRules: () => initialState,
+    // сменить приоритет с корректным сдвигом остальных
+    changePriority: (state, action: PayloadAction<{ id: number; priority: number }>) => {
+      movePriority(state.list, action.payload.id, action.payload.priority);
+    },
+
+    // удобные обёртки
+    moveUp: (state, action: PayloadAction<{ id: number }>) => {
+      const it = state.list.find((r) => r.id === action.payload.id);
+      if (!it) {
+        return;
+      }
+      movePriority(state.list, it.id, it.priority - 1);
+    },
+
+    moveDown: (state, action: PayloadAction<{ id: number }>) => {
+      const it = state.list.find((r) => r.id === action.payload.id);
+      if (!it) {
+        return;
+      }
+      movePriority(state.list, it.id, it.priority + 1);
+    },
   },
 });
 
-export const { setRules, addRule, updateRule, deleteRule, changePriority, clearRules } =
+export const { addRule, updateRule, deleteRule, changePriority, moveUp, moveDown } =
   rulesSlice.actions;
-export default rulesSlice.reducer as Reducer<RulesState>;
+
+export default rulesSlice.reducer;
+
+/* ---- Селекторы ---- */
+
+// Отсортированный список
+export const selectRulesSorted = (state: { rules: RulesState }): Rule[] =>
+  [...state.rules.list].sort((a, b) => a.priority - b.priority);
+
+// Готовый документ к отправке (используем только compiled)
+export const selectCompiledDocument = createSelector(
+  (state: { rules: RulesState }) => state.rules.list,
+  (list): { rules: Array<{ expression: Expression; exclusion: Expression; priority: number }> } => {
+    const rows = [...list]
+      .sort((a, b) => a.priority - b.priority)
+      .map((r) => ({
+        expression: r.compiled?.expression ?? ([] as Expression),
+        exclusion: r.compiled?.exclusion ?? ([] as Expression),
+        priority: r.priority,
+      }));
+    return { rules: rows };
+  },
+);

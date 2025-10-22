@@ -2,6 +2,9 @@
     background-color: var(--color-table-head);
     font-weight: 600;
 }
+.rule-errors { margin-top: 6px; }
+.rule-error  { color: #dc2626; font-size: 12px; line-height: 1.35; }
+
 .rule-element{
     min-width: 20%;
     display: flex;

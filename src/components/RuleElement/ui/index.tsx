@@ -22,6 +22,8 @@ import './rule-element.scss';
 
 import React from 'react';
 
+import { buildRuleJson } from '@/shared/lang/api';
+
 type elemState = 'view' | 'edit' | 'new';
 
 export const RuleElementHead = () => (
@@ -50,21 +52,42 @@ export const RuleElement: React.FC<
   const [editableState, setEditableState] = React.useState(isEditable || false);
 
   const [ruleState, setRuleState] = React.useState(rule);
-  const [exState, setExState] = React.useState(exclusion);
+  const [exState, setExState] = React.useState(exclusion || '');
+
+  const [submitErr, setSubmitErr] = React.useState<string>();
 
   const clearInputs = () => {
     setRuleState('');
     setExState('');
+    setSubmitErr(undefined);
   };
 
-  const handleAdd = () => {
-    dispatch(addRule({ rule: ruleState, priority, exclusion: exState }));
-    setElemState('new');
-    clearInputs();
+  // handleAdd
+  const handleAdd = async () => {
+    setSubmitErr(undefined);
+    try {
+      const compiled = await buildRuleJson(ruleState, exState); // жёсткая валидация
+      dispatch(addRule({ rule: ruleState, exclusion: exState, compiled }));
+      setEditableState(false);
+      clearInputs();
+      setElemState('new');
+      // очистка при желании
+      // setRuleState(''); setExState('');
+    } catch (e) {
+      setSubmitErr(e instanceof Error ? e.message : String(e));
+    }
   };
-  const handleUpdate = () => {
-    dispatch(updateRule({ id, changes: { rule: ruleState, exclusion: exState } }));
-    setEditableState(false);
+
+  // handleUpdate
+  const handleUpdate = async () => {
+    setSubmitErr(undefined);
+    try {
+      const compiled = await buildRuleJson(ruleState, exState);
+      dispatch(updateRule({ id, changes: { rule: ruleState, exclusion: exState, compiled } }));
+      setEditableState(false);
+    } catch (e) {
+      setSubmitErr(e instanceof Error ? e.message : String(e));
+    }
   };
 
   const handlePriorityUp = () => {
@@ -136,9 +159,25 @@ export const RuleElement: React.FC<
           </button>
         )}
       </div>
+      {submitErr && (
+        <div className="rule-errors">
+          {submitErr.split('\n').map((m, i) => (
+            <div key={i} className="rule-error">
+              {m}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   ) : (
-    <div className="add rule-element" onClick={() => setElemState('view')}>
+    <div
+      className="add rule-element"
+      onClick={() => {
+        setElemState('view');
+        setEditableState(true);
+        setSubmitErr(undefined);
+      }}
+    >
       <Plus size={28} strokeWidth={3} /> Добавить правило
     </div>
   );
