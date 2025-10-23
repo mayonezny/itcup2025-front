@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 
 import type { unionStatus } from '@/features/transactions/dto';
 import type { Page, Transaction } from '@/features/transactions/types';
+import { API_TRANSACTIONS } from '@/shared/endpoints';
 
 const API = '/api';
 
@@ -29,11 +30,11 @@ const ALL: unionStatus[] = Array.from({ length: 1234 }, (_, i) => ({
   paymentChannel: faker.helpers.arrayElement(['card', 'bank', 'p2p']),
   ipAddress: faker.internet.ip(),
   deviceHash: faker.string.alphanumeric(24),
-  statuses: [{ name: '', datetime: new Date().toString(), description: '' }]
+  statuses: [{ name: '', datetime: new Date().toString(), description: '' }],
 }));
 
 export const transactionsHandlers = [
-  http.get(API, ({ request }) => {
+  http.get(API_TRANSACTIONS, ({ request }) => {
     const url = new URL(request.url);
     const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'));
     const pageSize = Math.max(1, Number(url.searchParams.get('pageSize') ?? '20'));

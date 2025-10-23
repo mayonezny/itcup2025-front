@@ -1,4 +1,5 @@
-// src/features/transactions/TransactionsTable.tsx
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+
 import { useTransactions } from '../../../features/transactions/api';
 import './transactions-table.scss';
 
@@ -8,15 +9,15 @@ export function TransactionsTable() {
 
   return (
     <div className="tx-table">
-      <h1>Транзакции</h1>
+      <h1 id="transactions">Транзакции</h1>
 
       <div className="tx-toolbar">
         <div className="left">
-          <span>Всего: {total}</span>
+          <span className="muted">Всего: {total}</span>
         </div>
         <div className="right">
-          <label>
-            На странице:&nbsp;
+          <label className="tx-page-size">
+            На странице:
             <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
               {[10, 20, 50, 100].map((n) => (
                 <option key={n} value={n}>
@@ -30,16 +31,16 @@ export function TransactionsTable() {
 
       <div className="table">
         <div className="thead">
-          <div>ID корр.</div>
-          <div>ID транз.</div>
-          <div>Отправитель</div>
-          <div>Получатель</div>
-          <div>Сумма</div>
-          <div>Тип</div>
-          <div>Категория</div>
-          <div>Фрод</div>
-          <div>Тип фрода</div>
-          <div>Статусы</div>
+          <div className="c c--id">ID корр.</div>
+          <div className="c c--id">ID транз.</div>
+          <div className="c">Отправитель</div>
+          <div className="c">Получатель</div>
+          <div className="c c--num">Сумма</div>
+          <div className="c">Тип</div>
+          <div className="c">Категория</div>
+          <div className="c c--fraud">Фрод</div>
+          <div className="c">Тип фрода</div>
+          <div className="c c--status">Статусы</div>
         </div>
 
         {loading && <div className="row muted">Загрузка…</div>}
@@ -48,39 +49,73 @@ export function TransactionsTable() {
 
         <div className="tbody">
           {items.map((t) => (
-            <div className="row" key={t.id}>
-              <div>{t.correlationId}</div>
-              <div>{t.transactionId}</div>
-              <div className="mono">{t.senderAccount}</div>
-              <div className="mono">{t.receiverAccount}</div>
-              <div className="mono">{t.amount}</div>
-              <div>{t.transactionType}</div>
-              <div>{t.merchantCategory}</div>
-              <div className={t.isFraud ? 'badge bad' : 'badge good'}>
-                {t.isFraud ? 'Да' : 'Нет'}
+            <div className="trow" key={t.id}>
+              <div className="c c--id c--truncate" title={t.correlationId}>
+                {t.correlationId}
               </div>
-              <div>{t.fraudType}</div>
-              <div>{t.statuses[t.statuses.length - 1].datetime}</div>
+              <div className="c c--id c--truncate" title={t.transactionId}>
+                {t.transactionId}
+              </div>
+              <div className="c mono c--truncate" title={t.senderAccount}>
+                {t.senderAccount}
+              </div>
+              <div className="c mono c--truncate" title={t.receiverAccount}>
+                {t.receiverAccount}
+              </div>
+              <div className="c mono c--num">{t.amount}</div>
+              <div className="c">{t.transactionType}</div>
+              <div className="c">{t.merchantCategory}</div>
+              <div className="c c--fraud">
+                <span className={`pill ${t.isFraud ? 'pill--bad' : 'pill--ok'}`}>
+                  {t.isFraud ? 'Да' : 'Нет'}
+                </span>
+              </div>
+              <div className="c c--truncate" title={t.fraudType ?? '—'}>
+                {t.fraudType ?? '—'}
+              </div>
+              <div className="c c--status c--truncate" title={t.statuses.at(-1)?.datetime}>
+                {formatTs(t.statuses.at(-1)?.datetime ?? '')}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       <div className="tx-pager">
-        <button disabled={page <= 1} onClick={() => setPage(1)}>
-          {'⏮'}
+        <button
+          className="icon-btn"
+          disabled={page <= 1}
+          onClick={() => setPage(1)}
+          title="В начало"
+        >
+          <ChevronsLeft />
         </button>
-        <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-          {'‹'}
+        <button
+          className="icon-btn"
+          disabled={page <= 1}
+          onClick={() => setPage(page - 1)}
+          title="Назад"
+        >
+          <ChevronLeft />
         </button>
-        <span>
+        <span className="tx-pager__info">
           Стр. {page} / {pageCount}
         </span>
-        <button disabled={page >= pageCount} onClick={() => setPage(page + 1)}>
-          {'›'}
+        <button
+          className="icon-btn"
+          disabled={page >= pageCount}
+          onClick={() => setPage(page + 1)}
+          title="Вперёд"
+        >
+          <ChevronRight />
         </button>
-        <button disabled={page >= pageCount} onClick={() => setPage(pageCount)}>
-          {'⏭'}
+        <button
+          className="icon-btn"
+          disabled={page >= pageCount}
+          onClick={() => setPage(pageCount)}
+          title="В конец"
+        >
+          <ChevronsRight />
         </button>
       </div>
     </div>

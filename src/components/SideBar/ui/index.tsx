@@ -2,8 +2,10 @@ import { motion } from 'framer-motion';
 import { ChevronRightSquare } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { HashLink } from 'react-router-hash-link';
 
 import { NAV_ITEMS } from '../entities';
+
 import './side-bar.scss';
 
 export const SideBar: React.FC = () => {
@@ -53,16 +55,32 @@ export const SideBar: React.FC = () => {
 
         {/* Нижние пункты — фиксированная высота строк, без прыжков */}
         <div className="SideBar__gr2">
-          {NAV_ITEMS.map(({ icon: Icon, label, url }) => (
-            <NavLink
-              className={({ isActive }) => (isActive ? 'active row ' : 'row')}
-              key={label}
-              to={url}
-            >
-              <Icon />
-              <span className="row__label">{label}</span>
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map(({ icon: Icon, label, url }) => {
+            const isHash = url.includes('#');
+            return isHash ? (
+              <HashLink
+                className="row"
+                key={label}
+                smooth
+                to={url}
+                scroll={(el) => {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                <Icon />
+                <span className="row__label">{label}</span>
+              </HashLink>
+            ) : (
+              <NavLink
+                className={({ isActive }) => (isActive ? 'active row ' : 'row')}
+                key={label}
+                to={url}
+              >
+                <Icon />
+                <span className="row__label">{label}</span>
+              </NavLink>
+            );
+          })}
         </div>
       </div>
     </motion.aside>

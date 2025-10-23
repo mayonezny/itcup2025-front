@@ -2,11 +2,10 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import type { RootState } from '@/redux-rtk';
 import { api, axiosErrorMessage } from '@/shared/axios.config';
-
-import type { Page, PageQuery, Transaction } from '../types';
-import type { transactionDTO, unionStatus } from '../dto';
 import { API_TRANSACTIONS } from '@/shared/endpoints';
 
+import type { unionStatus } from '../dto';
+import type { Page, PageQuery } from '../types';
 
 export const fetchTransactions = createAsyncThunk<
   Page<unionStatus>,

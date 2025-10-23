@@ -2,11 +2,14 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: hidden;
   width: 100dvw;
   height: 100dvh;
   background-color: inherit;
-  &__maincont{
+  &__maincont {
     display: flex;
+    flex: 1 1 auto;
+    min-height: 0; /* чтобы правильно работали flex-скроллы */
+    overflow: hidden; /* внешне не нужен скролл, он будет в правом контенте */
   }
 }

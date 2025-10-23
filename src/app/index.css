@@ -13,12 +13,11 @@
   --orange-200: #fed7aa;
   --orange-300: #fdba74;
   --orange-400: #fb923c;
-  --orange-500: #F76B15; /* base */
+  --orange-500: #f76b15; /* base */
   --orange-600: #ea580c;
   --orange-700: #c2410c;
   --orange-800: #9a3412;
   --orange-900: #7c2d12;
-
 
   --blue-gradient: linear-gradient(to right, #000059, #1ba6cc);
 
@@ -39,10 +38,9 @@
   --black: #0b0f14;
   --white: #ffffff;
 
-  --saira: "Saira", sans-serif;
-  --roboto: "Roboto Flex", sans-serif;
-  --pt-sans: "PT Sans", sans-serif;
-  
+  --saira: 'Saira', sans-serif;
+  --roboto: 'Roboto Flex', sans-serif;
+  --pt-sans: 'PT Sans', sans-serif;
 
   /* Семантические токены */
   --color-bg: var(--gray-50);
@@ -57,7 +55,7 @@
   --color-primary: var(--orange-500);
   --color-primary-hover: var(--orange-600);
   --color-primary-active: var(--orange-700);
-  --color-primary-ghost: color-mix(in oklab, var(--orange-500) 12%, transparent);
+  --color-primary-ghost: color-mix(in oklab, var(--orange-500) 24%, transparent);
   --color-primary-weak: color-mix(in oklab, var(--orange-500) 6%, transparent);
 
   --white-hover: var(--gray-150);
@@ -177,6 +175,15 @@
   --color-focus: color-mix(in oklab, var(--orange-400) 45%, transparent);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+#rules,
+#transactions,
+#stats {
+  scroll-margin-top: 72px;
+}
+
 *,
 *::before,
 *::after {
@@ -190,11 +197,11 @@ body,
   width: 100%;
 }
 
-body > div{
+body > div {
   background-color: inherit;
 }
 
-#root{
+#root {
   width: 100dvw;
   height: 100dvh;
 }
@@ -206,7 +213,7 @@ html {
   hanging-punctuation: first last;
 }
 
-body{
+body {
   margin: 0;
   font-family:
     system-ui,
@@ -223,8 +230,14 @@ body{
   color: var(--color-text);
 }
 
-h1,h2,h3,h4,h5,h6,p { 
-  margin: 0; 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
 }
 
 img,

@@ -11,7 +11,7 @@ export const RuleTable = () => {
   const { rules } = useRuleTable();
   return (
     <div className="rule-table">
-      <h1>Текущие правила:</h1>
+      <h1 id="rules">Текущие правила:</h1>
       <RuleElementHead />
       {rules.length === 0 ? (
         <div className="norules">
