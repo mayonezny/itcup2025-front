@@ -2,12 +2,13 @@
 import { faker } from '@faker-js/faker';
 import { http, HttpResponse } from 'msw';
 
+import type { unionStatus } from '@/features/transactions/dto';
 import type { Page, Transaction } from '@/features/transactions/types';
 
 const API = '/api';
 
 // сгенерим фиксированный пул "больших" данных
-const ALL: Transaction[] = Array.from({ length: 1234 }, (_, i) => ({
+const ALL: unionStatus[] = Array.from({ length: 1234 }, (_, i) => ({
   id: i + 1,
   correlationId: faker.string.uuid(),
   transactionId: faker.string.alphanumeric(16),
@@ -28,6 +29,7 @@ const ALL: Transaction[] = Array.from({ length: 1234 }, (_, i) => ({
   paymentChannel: faker.helpers.arrayElement(['card', 'bank', 'p2p']),
   ipAddress: faker.internet.ip(),
   deviceHash: faker.string.alphanumeric(24),
+  statuses: [{ name: '', datetime: new Date().toString(), description: '' }]
 }));
 
 export const transactionsHandlers = [

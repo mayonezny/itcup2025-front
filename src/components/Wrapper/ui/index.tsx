@@ -7,9 +7,10 @@ import { SideBar } from '@/components/SideBar';
 
 export const Wrapper: React.FC = () => (
   <div className="wrapper">
-    <SideBar />
+    <Header />
+    
     <div className="wrapper__maincont">
-      <Header />
+      <SideBar />
       <Outlet />
     </div>
   </div>
