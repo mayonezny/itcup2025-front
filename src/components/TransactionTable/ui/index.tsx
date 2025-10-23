@@ -60,7 +60,7 @@ export function TransactionsTable() {
                 {t.isFraud ? 'Да' : 'Нет'}
               </div>
               <div>{t.fraudType}</div>
-              <div ></>
+              <div>{t.statuses[t.statuses.length - 1].datetime}</div>
             </div>
           ))}
         </div>

@@ -7,7 +7,7 @@ import type { transactionDTO } from '../dto';
 import { fetchTransactions } from './transactionThunks';
 
 export interface TransactionsState {
-  items: transactionDTO[];
+  items: transactionDTO;
   total: number;
   page: number; // 1-based
   pageSize: number;

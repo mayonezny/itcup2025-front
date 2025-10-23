@@ -1,5 +1,8 @@
 import type { Transaction, status } from "../types";
 
-export type statuses = status[];
+export interface statuses{
+    statuses: status[]
+}
 
-export type transactionDTO = Transaction & statuses;
+export type unionStatus = Transaction & statuses;
+export type transactionDTO = unionStatus[];
