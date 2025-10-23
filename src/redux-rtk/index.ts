@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
-import transactionsReducer from '@/components/TransactionTable/store/transactionSlice';
+import transactionsReducer from '@/features/transactions/store/transactionSlice';
 
 import rulesReducer from './store/rules/rulesSlice';
 

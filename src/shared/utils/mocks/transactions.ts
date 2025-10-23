@@ -2,7 +2,7 @@
 import { faker } from '@faker-js/faker';
 import { http, HttpResponse } from 'msw';
 
-import type { Page, Transaction } from '@/components/TransactionTable/types';
+import type { Page, Transaction } from '@/features/transactions/types';
 
 const API = '/api';
 

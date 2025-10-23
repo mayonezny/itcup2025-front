@@ -1,5 +1,5 @@
 // src/features/transactions/TransactionsTable.tsx
-import { useTransactions } from '../api';
+import { useTransactions } from '../../../features/transactions/api';
 import './transactions-table.scss';
 
 export function TransactionsTable() {
@@ -30,17 +30,16 @@ export function TransactionsTable() {
 
       <div className="table">
         <div className="thead">
-          <div>ID</div>
-          <div>Время</div>
+          <div>ID корр.</div>
+          <div>ID транз.</div>
           <div>Отправитель</div>
           <div>Получатель</div>
           <div>Сумма</div>
           <div>Тип</div>
           <div>Категория</div>
-          <div>Канал</div>
-          <div>Локация</div>
-          <div>Устройство</div>
-          <div>Fraud</div>
+          <div>Фрод</div>
+          <div>Тип фрода</div>
+          <div>Статусы</div>
         </div>
 
         {loading && <div className="row muted">Загрузка…</div>}
@@ -50,19 +49,18 @@ export function TransactionsTable() {
         <div className="tbody">
           {items.map((t) => (
             <div className="row" key={t.id}>
-              <div>{t.id}</div>
-              <div>{formatTs(t.timestamp)}</div>
+              <div>{t.correlationId}</div>
+              <div>{t.transactionId}</div>
               <div className="mono">{t.senderAccount}</div>
               <div className="mono">{t.receiverAccount}</div>
               <div className="mono">{t.amount}</div>
               <div>{t.transactionType}</div>
               <div>{t.merchantCategory}</div>
-              <div>{t.paymentChannel}</div>
-              <div>{t.location}</div>
-              <div>{t.deviceUsed}</div>
               <div className={t.isFraud ? 'badge bad' : 'badge good'}>
                 {t.isFraud ? 'Да' : 'Нет'}
               </div>
+              <div>{t.fraudType}</div>
+              <div ></>
             </div>
           ))}
         </div>

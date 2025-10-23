@@ -1,8 +1,7 @@
 // src/features/transactions/types.ts
-export type ID = number;
 
 export interface Transaction {
-  id: ID;
+  id: number;
   correlationId: string;
   transactionId: string;
   timestamp: string; // ISO
@@ -22,6 +21,12 @@ export interface Transaction {
   paymentChannel: string;
   ipAddress: string;
   deviceHash: string;
+}
+
+export interface status {
+  name: string;
+  description: string;
+  datetime: string;
 }
 
 // серверный ответ постранично

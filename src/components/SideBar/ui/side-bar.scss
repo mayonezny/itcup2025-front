@@ -1,0 +1,107 @@
+.SideBar {
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  width: 64px;
+  border-right: var(--border);
+  background-color: #fff;
+  &__wr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+  }
+  svg {
+    color: var(--color-dark-red);
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+  }
+  &__gr2 {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px; /* чуть меньше — меньше рывков */
+    flex: 1;
+  }
+}
+
+.row {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  height: 40px; /* фиксируем высоту строки */
+  border-radius: 8px;
+  line-height: 40px; /* и baseline выравниваем */
+  text-decoration: none; /* для <a> */
+  color: inherit; /* для <a> */
+}
+.row:hover {
+  color: inherit;
+}
+
+/* Подпись рядом с иконкой */
+.row__label {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden; /* убираем влияние baseline текста */
+}
+.SideBar__gr1 > .row:hover {
+  background-color: transparent;
+}
+/* Состояния панели */
+.SideBar--collapsed {
+  * > .SideBar__gr2 > .row {
+    width: 100%;
+    justify-content: center;
+  }
+  :where(.row:hover) {
+    background-color: var(--orange-hover);
+  }
+
+  .row__label {
+    width: 0;
+    opacity: 0;
+    margin-left: 0;
+  }
+}
+
+.SideBar--expanded {
+  padding-left: 12px;
+  padding-right: 12px;
+  .SideBar__gr2 {
+    width: 100%;
+  }
+  .row {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 12px;
+    transition: 0.3s ease-in;
+    border-radius: 8px;
+  }
+  .row__label {
+    width: auto;
+    opacity: 1;
+    transition:
+      opacity 0.18s ease,
+      width 0.18s ease;
+  }
+  :where(.row:hover) {
+    color: inherit;
+    background-color: var(--orange-hover);
+  }
+}
+
+.active {
+  background-color: var(--orange);
+}
+:where(.row:hover) {
+  background: var(--orange-hover);
+}
