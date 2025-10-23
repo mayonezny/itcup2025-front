@@ -3,11 +3,11 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RootState } from '@/redux-rtk/index';
 
-import type { Transaction } from '../types';
+import type { transactionDTO } from '../dto';
 import { fetchTransactions } from './transactionThunks';
 
 export interface TransactionsState {
-  items: Transaction[];
+  items: transactionDTO[];
   total: number;
   page: number; // 1-based
   pageSize: number;

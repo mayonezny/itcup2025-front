@@ -4,16 +4,17 @@ import type { RootState } from '@/redux-rtk';
 import { api, axiosErrorMessage } from '@/shared/axios.config';
 
 import type { Page, PageQuery, Transaction } from '../types';
+import type { transactionDTO } from '../dto';
 
 const API = '/api';
 
 export const fetchTransactions = createAsyncThunk<
-  Page<Transaction>,
+  Page<transactionDTO>,
   PageQuery,
   { state: RootState }
 >('transactions/fetch', async (q, { rejectWithValue }) => {
   try {
-    const res = await api.get<Page<Transaction>>(API, {
+    const res = await api.get<Page<transactionDTO>>(API, {
       params: { page: q.page, pageSize: q.pageSize },
     });
     return res.data;
