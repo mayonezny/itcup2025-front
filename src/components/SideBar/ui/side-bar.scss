@@ -23,8 +23,8 @@
     height: 24px;
     flex: 0 0 24px;
   }
-  &__gr2 {
-    width: 60%;
+  &__gr1, &__gr2{
+    max-width: 60%;
     display: flex;
     flex-direction: column;
 

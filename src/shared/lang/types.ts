@@ -17,3 +17,22 @@ export interface BuiltRule {
   expression: Expression;
   exclusion: Expression;
 }
+
+export interface BuiltMlRule {
+  ruleId: string;
+  name: string;
+  description: string;
+  modelConfig: ModelConfig;
+  riskRange: RiskRange;
+}
+
+export interface ModelConfig {
+  modelName: string;
+  inputFeatures: string[];
+}
+
+export interface RiskRange {
+  min: number;
+  max: number;
+  maxInclusive: boolean;
+}
