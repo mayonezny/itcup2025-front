@@ -10,7 +10,7 @@ export const fetchRules = createAsyncThunk<RulesDTO>(
   'rules/fetch',
   async (_q, { rejectWithValue }) => {
     try {
-      const res = await api.get<RulesDTO>(API_RULES);
+      const res = await api.get<RulesDTO>(API_RULES, { params: { isActive: true } });
       const arr = Array.isArray(res.data) ? res.data : [];
       return arr;
     } catch (err) {
@@ -73,12 +73,12 @@ export interface normalizeRulesDTO {
 
 export const normalizeRules = createAsyncThunk<unknown, normalizeRulesDTO>(
   'rules/normalize',
-  async (login, { getState, rejectWithValue }) => {
+  async (obj, { getState, rejectWithValue }) => {
+    const { login } = obj;
     const state = getState() as RootState;
     const rules = state.rulesReducer.items; // <-- тут уже свежие
-    console.log(rules);
     try {
-      const res = await api.put<normalizeRulesDTO>(`${API_RULES}/normalize`, rules, {
+      const res = await api.put<normalizeRulesDTO>(`${API_RULES}`, rules, {
         params: { login },
       });
       return res.data;

@@ -120,8 +120,11 @@ export const RuleElement: React.FC<
   async function handleDelete() {
     try {
       setSubmitErr(undefined);
-      dispatch(deleteRuleLoc({ id }));
+      flushSync(() => {
+        dispatch(deleteRuleLoc({ id }));
+      });
       dispatch(deleteRule({ id, login: LOGIN }));
+      dispatch(normalizeRules({ login: LOGIN }));
       setEditable(false);
     } catch (e) {
       setSubmitErr(e instanceof Error ? e.message : String(e));

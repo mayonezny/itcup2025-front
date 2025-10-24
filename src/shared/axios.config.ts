@@ -1,7 +1,8 @@
 import axios, { AxiosError } from 'axios';
+import { API_URL } from './constants';
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_URL,
   timeout: 15000,
 });
 

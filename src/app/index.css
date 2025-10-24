@@ -226,7 +226,7 @@ body {
     'Apple Color Emoji',
     'Segoe UI Emoji';
   line-height: 1.5;
-  background: var(--color-bg);
+  background: var(--white);
   color: var(--color-text);
 }
 
