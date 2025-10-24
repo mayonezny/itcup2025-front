@@ -19,20 +19,22 @@ export const RuleTable = () => {
           <h2>На данный момент никаких правил не задано {':(('}</h2>
         </div>
       ) : (
-        rules.map((row, i) => (
-          <React.Fragment key={row.id}>
-            <RuleElement {...row} />
-            {i < rules.length - 1 && <LinedText As="h4">AND</LinedText>}
-          </React.Fragment>
-        ))
+        rules.map((row, i) =>
+          row.isActive ? (
+            <React.Fragment key={row.id}>
+              <RuleElement {...row} />
+              {i < rules.length - 1 && <LinedText As="h4">AND</LinedText>}
+            </React.Fragment>
+          ) : null,
+        )
       )}
       <RuleElement
         isEditable
         isNew
         state={'new'}
         id={rules ? rules.length + 1 : 0}
-        priority={0}
-        isActive={false}
+        priority={1}
+        isActive={true}
         filterType={'alg'}
         action={''}
         ruleValue={{

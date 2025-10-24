@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
+import type { RootState } from '@/redux-rtk';
 import { api, axiosErrorMessage } from '@/shared/axios.config';
 import { API_RULES } from '@/shared/endpoints';
 
@@ -42,7 +43,7 @@ export const updateRule = createAsyncThunk<unknown, updateRuleDTO>(
   async (obj, { rejectWithValue }) => {
     const { rule, login } = obj;
     try {
-      const res = await api.put<RuleObject>(`${API_RULES}/${rule.id}`, { params: { login } });
+      const res = await api.put<RuleObject>(`${API_RULES}/${rule.id}`, rule, { params: { login } });
       return res.data;
     } catch (err) {
       return rejectWithValue(axiosErrorMessage(err));
@@ -65,3 +66,24 @@ export const deleteRule = createAsyncThunk<
     return axiosErrorMessage(err);
   }
 });
+
+export interface normalizeRulesDTO {
+  login: string;
+}
+
+export const normalizeRules = createAsyncThunk<unknown, normalizeRulesDTO>(
+  'rules/normalize',
+  async (login, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    const rules = state.rulesReducer.items; // <-- тут уже свежие
+    console.log(rules);
+    try {
+      const res = await api.put<normalizeRulesDTO>(`${API_RULES}/normalize`, rules, {
+        params: { login },
+      });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(axiosErrorMessage(err));
+    }
+  },
+);

@@ -1,5 +1,7 @@
-const local: boolean = true;
-const safeMode: boolean = false;
-export const API_URL = local ? `${safeMode ? 'https' : 'http'}://localhost:10001/` : 'unknown';
+export const API_URL = import.meta.env.VITE_API_URL;
 
-export const LOGIN = 'colonelsarkisyan';
+export const LOGIN = import.meta.env.VITE_LOGIN;
+
+export const graphanaLink = import.meta.env.VITE_GRAPHANA_LINK;
+
+export const graylogLink = import.meta.env.VITE_GRAYLOG_LINK;

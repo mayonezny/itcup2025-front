@@ -8,6 +8,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import React from 'react';
+import { flushSync } from 'react-dom';
 
 import type { RuleObject } from '@/features/rules/dto';
 import {
@@ -16,7 +17,12 @@ import {
   deleteRuleLoc,
   updateRuleLoc,
 } from '@/features/rules/store/rulesSlice';
-import { addRule, deleteRule, updateRule } from '@/features/rules/store/rulesThunks';
+import {
+  addRule,
+  deleteRule,
+  normalizeRules,
+  updateRule,
+} from '@/features/rules/store/rulesThunks';
 import type { FilterType, RuleValue } from '@/features/rules/types';
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import { LOGIN } from '@/shared/constants';
@@ -77,8 +83,12 @@ export const RuleElement: React.FC<
         ruleValue: val,
         priority,
       };
-      dispatch(addRuleLoc(payload));
+
+      flushSync(() => {
+        dispatch(addRuleLoc(payload));
+      });
       dispatch(addRule({ rule: payload, login: LOGIN }));
+      dispatch(normalizeRules({ login: LOGIN }));
       setEditable(false);
       setElemState('new');
     } catch (e) {
@@ -112,6 +122,33 @@ export const RuleElement: React.FC<
       setSubmitErr(undefined);
       dispatch(deleteRuleLoc({ id }));
       dispatch(deleteRule({ id, login: LOGIN }));
+      setEditable(false);
+    } catch (e) {
+      setSubmitErr(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  async function handlePriorityUp() {
+    try {
+      setSubmitErr(undefined);
+      flushSync(() => {
+        dispatch(changePriority({ id, priority: priority - 1 }));
+      });
+      dispatch(normalizeRules({ login: LOGIN }));
+      setEditable(false);
+    } catch (e) {
+      setSubmitErr(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  async function handlePriorityDown() {
+    try {
+      setSubmitErr(undefined);
+      flushSync(() => {
+        dispatch(changePriority({ id, priority: priority + 1 }));
+      });
+      dispatch(normalizeRules({ login: LOGIN }));
+
       setEditable(false);
     } catch (e) {
       setSubmitErr(e instanceof Error ? e.message : String(e));
@@ -176,16 +213,10 @@ export const RuleElement: React.FC<
       <div className="col col--icons">
         {!editable && (
           <div className="prio">
-            <button
-              onClick={() => dispatch(changePriority({ id, priority: priority - 1 }))}
-              title="Повысить"
-            >
+            <button onClick={handlePriorityUp} title="Повысить">
               <SquareArrowUp />
             </button>
-            <button
-              onClick={() => dispatch(changePriority({ id, priority: priority + 1 }))}
-              title="Понизить"
-            >
+            <button onClick={handlePriorityDown} title="Понизить">
               <SquareArrowDown />
             </button>
           </div>

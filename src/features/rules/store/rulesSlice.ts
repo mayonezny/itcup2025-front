@@ -2,7 +2,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RuleObject, RulesDTO } from '../dto';
-import { addRule, deleteRule, fetchRules, updateRule } from './rulesThunks';
+import { addRule, deleteRule, fetchRules, normalizeRules, updateRule } from './rulesThunks';
 
 export interface RulesState {
   items: RulesDTO;
@@ -105,6 +105,17 @@ const rulesSlice = createSlice({
       s.loading = false;
     });
     b.addCase(deleteRule.rejected, (s, a) => {
+      s.loading = false;
+      s.error = a.error.message || 'Unknown error';
+    });
+    b.addCase(normalizeRules.pending, (s) => {
+      s.loading = true;
+      s.error = undefined;
+    });
+    b.addCase(normalizeRules.fulfilled, (s) => {
+      s.loading = false;
+    });
+    b.addCase(normalizeRules.rejected, (s, a) => {
       s.loading = false;
       s.error = a.error.message || 'Unknown error';
     });
