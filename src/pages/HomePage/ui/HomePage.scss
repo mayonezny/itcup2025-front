@@ -1,0 +1,10 @@
+.main-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 70%;
+  padding: var(--pad-xl);
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}

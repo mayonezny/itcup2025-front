@@ -1,0 +1,35 @@
+.header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-height: 100px;
+  background: var(--bg-header);
+  padding: var(--pad-xs);
+  color: var(--header-text);
+  .logo{
+    display: flex;
+    max-height: 120%;
+    margin-left: 128px;
+    > div{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-height: 100px;
+        .app-name{
+            font-family: var(--saira);
+            font-size: 2rem;
+            line-height: 36px;
+        }
+        h5{
+            font-family: var(--pt-sans);
+            font-size: 0.85rem;
+            color: var(--gray-100);
+        }
+    }
+    
+  }
+  
+}

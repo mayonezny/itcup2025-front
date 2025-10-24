@@ -1,0 +1,26 @@
+[
+    {
+        "id": 0,
+        "is_active": true,
+        "filter_type": "alg",
+        "action": "freeze",
+        "rule_value": "{\"expression\": [[{\"name\": \"amount\",\"type\": \"float\",\"inversion\": false,\"operator\": \">\",\"value\": \"10.0\"},{\"name\": \"timestamp\",\"type\": \"time\",\"inversion\": true,\"operator\": \"between\",\"value\": \"00:00:00-12:00:00\"}],[{\"name\": \"amount\",\"type\":\"float\",\"inversion\": false,\"operator\": \"<=\",\"value\": \"300000\"},{\"name\": \"transaction_type\",\"type\": \"string\",\"inversion\": false,\"operation\": \"==\",\"value\": \"buying\"}]],\"exclusion\": [[{\"name\": \"amount\",\"type\": \"float\",\"inversion\": false,\"operation\": \"<=\",\"value\": \"500000\"}]]}",
+        "priority": 0
+    },
+    {
+    "id": 1,
+    "is_active": true,
+    "filter_type": "ml",
+    "action": "allow",
+    "rule_value": "{\"rule_id\": \"ml_rule_low_risk\",\"name\": \"Низкий рискмошенничества\",\"description\": \"Вероятность мошенничества ниже 0.45 — транзакция не фрод\",\"model_config\": {\"model_name\": \"fraud_model_v1.pkl\",\"input_features\": [\"timestamp\",\"sender_account\",\"receiver_account\",\"amount\",\"transaction_type\",\"merchant_category\",\"location\",\"device_used\",\"time_since_last_transaction\",\"spending_deviation_score\",\"velocity_score\",\"geo_anomaly_score\",\"payment_channel\",\"ip_address\",\"device_hash\"]},\"risk_range\": {\"min\": 0.0,\"max\": 0.45,\"max_inclusive\": false}}",
+    "priority": 1
+    },
+    {
+        "id": 2,
+        "is_active": false,
+        "filter_type": "ALG",
+        "action": "freeze",
+        "rule_value": {},
+        "priority": 5
+    }
+]

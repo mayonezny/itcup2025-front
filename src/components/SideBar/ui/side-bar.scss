@@ -1,0 +1,107 @@
+.SideBar {
+  position: sticky;
+  top: 0px; /* НЕ 0 — чтобы не заезжал под хедер */
+  align-self: flex-start; /* чтобы sticky работал внутри flex-контейнера */
+  height: calc(100dvh - var(--header-h));
+  z-index: 5; /* ниже, чем у хедера (поставь у Header z-index: 10) */
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  width: 64px;
+  border-right: var(--border);
+  background-color: #fff;
+
+  &__wr {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    height: 100%;
+    align-items: center; /* растянуть группы на всю ширину */
+  }
+
+  svg {
+    color: var(--color-dark-red);
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+  }
+
+  /* группы: убираем max-width, иначе ломает ширину */
+  &__gr1,
+  &__gr2 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 auto;
+  } /* основные пункты занимают остаток высоты */
+}
+
+/* пункт меню */
+.row {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 8px;
+
+  width: fit-content;
+
+  padding: var(--pad-xs);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  line-height: 40px;
+}
+
+.row:hover {
+  background: var(--color-primary-ghost);
+  color: inherit;
+}
+
+/* подпись */
+.row__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* состояния панели — УПРОЩАЕМ селекторы (!): */
+.SideBar--collapsed {
+  .SideBar__gr2 .row {
+    justify-content: center;
+  }
+  .row__label {
+    width: 0;
+    opacity: 0;
+    margin-left: 0;
+  }
+}
+
+.SideBar--expanded {
+  padding-left: 12px;
+  padding-right: 12px;
+
+  .SideBar__gr2 {
+    width: 100%;
+  }
+  .row {
+    transition: background-color 0.18s;
+    gap: var(--space-3);
+    width: 100%;
+  }
+  .row__label {
+    width: auto;
+    opacity: 1;
+    transition:
+      opacity 0.18s,
+      width 0.18s;
+  }
+}
+
+/* активный пункт */
+.active {
+  background: var(--orange);
+}

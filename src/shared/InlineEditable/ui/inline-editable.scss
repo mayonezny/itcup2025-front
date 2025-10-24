@@ -1,0 +1,38 @@
+input{
+    padding: var(--pad-2xs) var(--pad-sm);
+    background-color: var(--white);
+    border: none;
+    width: 90%;
+    > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+input:focus{
+    box-shadow: none;
+    border: none;
+    outline: none;
+    background-color: var(--white-active);
+}
+button{
+    padding: var(--pad-2xs) var(--pad-sm);
+    border-radius: var(--radius);
+}
+button:hover{
+    background-color: var(--white-hover);
+}
+
+.ie-wrap { position: relative; width: 100%; }
+
+.ie-wrap .rs-input, .ie-wrap .rs-input-group, .ie-wrap input {
+  width: 100%; box-sizing: border-box;
+}
+
+.ie-suggest {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
+  background: #fff; border: 1px solid var(--grey-borderline); border-radius: 8px;
+  padding: 4px; max-height: 240px; overflow: auto; list-style: none; margin: 0;
+}
+.ie-suggest li { padding: 6px 8px; cursor: pointer; border-radius: 6px; }
+.ie-suggest li.active, .ie-suggest li:hover { background: var(--white-hover); }

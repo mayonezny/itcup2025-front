@@ -1,0 +1,11 @@
+{ 
+  "projectName": "fraudRules",
+  "languages": [
+    {
+      "id": "fraud",
+      "grammar": "src/shared/lang/fraud-rules.langium",
+      "fileExtensions": [".frule"]
+    }
+  ],
+  "out": "src/shared/lang/generated"
+}

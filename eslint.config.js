@@ -1,10 +1,10 @@
 // eslint.config.js
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import prettierRecommended from 'eslint-plugin-prettier/recommended';
-import importPlugin from 'eslint-plugin-import';
+import tseslint from 'typescript-eslint';
 
 export default [
   // Базовые рекомендации JS и TS
@@ -28,6 +28,7 @@ export default [
         window: 'readonly',
         document: 'readonly',
       },
+      
     },
     plugins: {
       react: reactPlugin,

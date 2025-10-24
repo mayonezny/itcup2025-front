@@ -1,0 +1,221 @@
+/* контейнер секции */
+.tx-table {
+  display: grid;
+  gap: 12px;
+}
+
+/* тулбар сверху */
+.tx-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .muted {
+    color: var(--text-muted, #6b7280);
+  }
+
+  .tx-page-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted, #6b7280);
+
+    select {
+      appearance: none;
+      border: 1px solid var(--grey-borderline, #e5e7eb);
+      background: var(--white, #fff);
+      color: inherit;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font: inherit;
+      outline: none;
+
+      &:focus {
+        border-color: var(--orange-500, #f76b15);
+        box-shadow: 0 0 0 3px rgba(247, 107, 21, 0.15);
+      }
+    }
+  }
+}
+
+/* сама «таблица» */
+.table {
+  border: 1px solid var(--grey-borderline, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+
+  /* фикс высоты с прокруткой тела при необходимости */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  max-height: 640px;
+}
+
+/* шапка */
+.thead {
+  display: grid;
+  grid-template-columns:
+    140px /* corr id */
+    160px /* tx id   */
+    1fr /* sender  */
+    1fr /* receiver*/
+    120px /* amount  */
+    120px /* type    */
+    160px /* category*/
+    90px /* fraud   — короткий */
+    160px /* fraud type */
+    220px; /* statuses */
+
+  background: #f3f4f6;
+  border-bottom: 1px solid var(--grey-borderline, #e5e7eb);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  .c {
+    padding: 12px 16px;
+    font-weight: 600;
+  }
+}
+
+/* тело */
+.tbody {
+  overflow: auto; /* внутренний скролл */
+}
+
+.trow {
+  display: grid;
+  grid-template-columns: 140px 160px 1fr 1fr 120px 120px 160px 90px 160px 220px;
+  align-items: center;
+
+  /* зебра */
+  &:nth-child(odd) {
+    background: #fff;
+  }
+  &:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .c {
+    padding: 12px 16px;
+    min-width: 0; /* для ellipsis в grid */
+  }
+}
+.trow:hover {
+  background-color: var(--color-primary-ghost);
+  cursor: pointer;
+}
+
+/* моно-шрифт для чисел/счетов */
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* выравнивание чисел */
+.c--num {
+  text-align: right;
+}
+
+/* обрезка текста */
+.c--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* «Фрод» — пилюля */
+.c--fraud {
+  display: flex;
+  align-items: center;
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+
+    &.pill--ok {
+      color: #166534;
+      background: #dcfce7;
+    }
+    &.pill--bad {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+  }
+}
+
+/* статусы и длинные id — всегда с многоточием */
+.c--id,
+.c--status {
+  @extend .c--truncate;
+}
+
+/* сообщения */
+.row {
+  padding: 16px;
+  &.muted {
+    color: #6b7280;
+  }
+  &.error {
+    color: #b91c1c;
+  }
+}
+
+/* пагинация */
+.tx-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    width: 36px;
+    border: 1px solid var(--grey-borderline, #e5e7eb);
+    border-radius: 10px;
+    background: #fff;
+    color: inherit;
+
+    &:hover {
+      background: var(--white-hover, #f6f6f6);
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .tx-pager__info {
+    min-width: 120px;
+    text-align: center;
+  }
+}
+
+/* адаптив: прячем самые шумные поля */
+@media (max-width: 1200px) {
+  .thead,
+  .trow {
+    grid-template-columns: 140px 160px 1fr 1fr 120px 120px 0px 90px 0px 180px;
+  }
+  /* скрыть колонки «Категория» и «Тип фрода» */
+  .thead .c:nth-child(7),
+  .thead .c:nth-child(9),
+  .trow .c:nth-child(7),
+  .trow .c:nth-child(9) {
+    display: none;
+  }
+}
