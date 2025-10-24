@@ -3,9 +3,12 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import rulesReducer from '@/features/rules/store/rulesSlice';
 import transactionsReducer from '@/features/transactions/store/transactionSlice';
 
+import ruleDraftsReducer from './store/drafts/ruleDraftsSlice';
+
 export const rootReducer = combineReducers({
   rulesReducer,
   transactionsReducer,
+  ruleDraftsReducer,
 });
 export const setupStore = () =>
   configureStore({

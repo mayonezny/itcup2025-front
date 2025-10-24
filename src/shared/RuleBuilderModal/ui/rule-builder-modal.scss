@@ -1,0 +1,122 @@
+.rs-modal-dialog {
+  position: relative;
+  background-color: transparent;
+  z-index: 20 !important;
+}
+.rs-modal-backdrop {
+  z-index: 16 !important;
+}
+/* Изолируем всё в рамках модалки */
+.rb-modal {
+  /* нормальный фон и текст для контролов RSuite */
+  background-color: transparent;
+  .rs-picker-toggle,
+  .rs-input input {
+    background: #fff;
+    color: var(--color-text);
+  }
+
+  /* фикс высоты, чтобы пикеры и инпуты НЕ переносили внутренние элементы */
+  .rb-row {
+    display: grid;
+    grid-template-columns: 180px 120px 130px 1fr auto auto;
+    grid-auto-rows: minmax(36px, auto);
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+
+    > * {
+      min-width: 0;
+    } /* чтобы 1fr не разрывал сетку */
+  }
+
+  /* высота/line-height для контролов */
+  .rb-row .rs-picker,
+  .rb-row .rs-input {
+    height: 36px;
+  }
+  .rb-row .rs-picker .rs-picker-toggle {
+    height: 36px;
+    line-height: 36px;
+  }
+  .rb-row .rs-input input {
+    height: 36px;
+    line-height: 36px;
+  }
+
+  /* чекбокс и кнопки по центру, кнопки покрупнее */
+  .rb-row .rs-checkbox {
+    align-self: center;
+  }
+  .rb-row .rs-btn.rs-btn-subtle {
+    height: 36px;
+  }
+
+  /* футер модалки: разлипить кнопки */
+  .rs-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  /* разделители AND/OR по центру и не огромные */
+  .rb-or-sep {
+    text-align: center;
+    color: var(--color-text-brighter);
+    font-weight: 600;
+    padding: 6px 0;
+  }
+
+  /* размер иконок в строке предиката */
+  .rb-row .rs-btn .rs-icon,
+  .rb-row .rs-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* компактный редактор диапазона времени */
+.rb-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .rs-input {
+    width: 120px;
+  }
+}
+.rb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rs-btn {
+  width: fit-content;
+}
+.plus-and {
+  padding: 4px;
+}
+.rb-and-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rs-stack {
+  display: flex;
+  align-items: center;
+}
+.rs-picker-toggle {
+  padding: 0 8px !important;
+}
+.rb-and-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rb-error {
+  color: var(--color-danger);
+  font-family: monospace;
+}

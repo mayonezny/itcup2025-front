@@ -7,7 +7,7 @@ import {
   SquarePen,
   Trash2,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import type { RuleObject } from '@/features/rules/dto';
@@ -26,7 +26,8 @@ import {
 import type { FilterType, RuleValue } from '@/features/rules/types';
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import { LOGIN } from '@/shared/constants';
-import { PopupEditor } from '@/shared/PopupEditor';
+import type { BuiltRule } from '@/shared/lang/types';
+import { RuleBuilderModal, type RuleDictionaries } from '@/shared/RuleBuilderModal';
 import './rule-element.scss';
 
 type ElemState = 'view' | 'edit' | 'new';
@@ -63,9 +64,20 @@ export const RuleElement: React.FC<
   const [act, setAct] = React.useState<string>(action);
   const [val, setVal] = React.useState<RuleValue>(ruleValue);
   const [submitErr, setSubmitErr] = React.useState<string | undefined>(undefined);
+  const [currentRule, setCurrentRule] = useState<BuiltRule | undefined>(undefined);
 
   const anchorRef = React.useRef<HTMLButtonElement>(null);
-  const [editorOpen, setEditorOpen] = React.useState(false);
+
+  const [open, setOpen] = useState(false);
+
+  const dicts: RuleDictionaries = {
+    names: ['COUNT', 'TIME', 'AMOUNT', 'TIMESTAMP'],
+    valueTypes: ['float', 'time'],
+    operatorsByType: {
+      float: ['>=', '>', '<=', '<', '='],
+      time: ['between'],
+    },
+  };
 
   function preview(v: RuleValue): string {
     const s = JSON.stringify(v);
@@ -198,18 +210,22 @@ export const RuleElement: React.FC<
           ref={anchorRef}
           type="button"
           className={`btn-json ${editable ? 'btn-json--edit' : ''}`}
-          onClick={() => setEditorOpen(true)}
+          onClick={() => setOpen(true)}
           title="Открыть JSON редактор"
         >
           {preview(val)}
         </button>
-        <PopupEditor
-          open={editorOpen && editable}
-          anchorRef={anchorRef}
-          filterType={ft}
-          valueText={JSON.stringify(val)}
-          onApplyText={(v) => setVal(JSON.parse(v))}
-          onClose={() => setEditorOpen(false)}
+        <RuleBuilderModal
+          open={open}
+          onClose={() => setOpen(false)}
+          dicts={dicts}
+          initial={currentRule}
+          onSave={(built: BuiltRule) => {
+            console.log(built);
+            setVal(built);
+            console.log('SAVE', built);
+            setCurrentRule(built);
+          }}
         />
       </div>
 

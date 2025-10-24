@@ -340,3 +340,31 @@ textarea {
   white-space: nowrap;
   border: 0;
 }
+
+/* где-нибудь в твоём global.scss */
+.header,
+.SideBar {
+  z-index: 10;
+} /* хедер/сайдбар пониже */
+
+/* поверх всего — RSuite modal */
+.rs-modal-backdrop {
+  z-index: 1999 !important;
+} /* фон-затемнение */
+.rs-modal-wrapper {
+  z-index: 188 !important;
+  width: fit-content !important;
+  position: absolute !important;
+  height: fit-content !important;
+  top: 100px !important;
+  left: 300px !important;
+  border-radius: 12px;
+} /* сама модалка */
+
+.rs-modal-backdrop.rs-anim-in {
+  background-color: #00000059;
+}
+
+.rs-modal {
+  margin: 0 !important;
+}

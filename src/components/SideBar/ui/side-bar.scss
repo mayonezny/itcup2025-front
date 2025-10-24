@@ -3,7 +3,7 @@
   top: 0px; /* НЕ 0 — чтобы не заезжал под хедер */
   align-self: flex-start; /* чтобы sticky работал внутри flex-контейнера */
   height: calc(100dvh - var(--header-h));
-  z-index: 5; /* ниже, чем у хедера (поставь у Header z-index: 10) */
+  z-index: 14; /* ниже, чем у хедера (поставь у Header z-index: 10) */
   left: 0;
 
   display: flex;

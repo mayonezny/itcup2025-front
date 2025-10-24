@@ -1,0 +1,510 @@
+/* eslint-disable prettier/prettier */
+import { Plus, SquarePlus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Button,
+  Checkbox,
+  Divider,
+  IconButton,
+  Input,
+  Message,
+  Modal,
+  SelectPicker,
+  toaster,
+} from 'rsuite';
+
+import type { AlgRuleValue } from '@/features/rules/types';
+import './rule-builder-modal.scss';
+//
+// Типы, совпадающие с твоими
+//
+export type Operator = '>=' | '>' | '<=' | '<' | '=' | 'between';
+export type ValueType = 'float' | 'time';
+
+export interface JsonPredicate {
+  name: string;
+  type: ValueType;
+  inversion: boolean;
+  operator: Operator;
+  value: string; // "5000.0" | "00:00:00-12:30:00"
+}
+export type AndGroup = JsonPredicate[];
+export type Expression = AndGroup[];
+
+export interface BuiltRule {
+  expression: Expression;
+  exclusion: Expression;
+}
+
+//
+// Плейсхолдеры справочников, которые прилетают с бэка.
+// Передай в пропсах реальный набор (см. интерфейс RuleDictionaries ниже).
+//
+export interface RuleDictionaries {
+  names: string[]; // ['COUNT','TIME', ...]
+  operatorsByType: Record<ValueType, Operator[]>; // { float: ['>=','>','<=','<','='], time: ['between'] }
+  valueTypes: ValueType[]; // ['float','time']
+}
+
+//
+// Пропсы модалки
+//
+export function RuleBuilderModal({
+  open,
+  onClose,
+  dicts,
+  initial,
+  onSave,
+  persistOnClose = true,
+}: {
+  open: boolean;
+  onClose: () => void;
+  dicts: RuleDictionaries;
+  initial?: AlgRuleValue; // чтобы редактировать уже готовое правило
+  onSave: (rule: BuiltRule) => void;
+  persistOnClose?: boolean;
+}) {
+  // Локальное состояние конструктора
+  const [expression, setExpression] = useState<Expression>(
+    initial?.expression ?? [[blankPredicate()]],
+  );
+  const [exclusion, setExclusion] = useState<Expression>(initial?.exclusion ?? []);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    if (initial) {
+      setExpression(initial.expression?.length ? initial.expression : [[blankPredicate()]]);
+      setExclusion(initial.exclusion ?? []);
+    }
+  }, [open, initial]);
+
+  useEffect(() => {
+    if (open || persistOnClose) {
+      return;
+    }
+    if (initial) {
+      setExpression(initial.expression?.length ? initial.expression : [[blankPredicate()]]);
+      setExclusion(initial.exclusion ?? []);
+    }
+  }, [open, persistOnClose, initial]);
+
+  // Вычислим ошибки для дизейбла кнопки «Сохранить»
+  const errors = useMemo(() => validateRule(expression, exclusion), [expression, exclusion]);
+  const isInvalid = errors.length > 0;
+
+  // Хелперы
+  function blankPredicate(): JsonPredicate {
+    return {
+      name: '',
+      type: 'float',
+      inversion: false,
+      operator: '>=',
+      value: '',
+    };
+  }
+
+  function addAnd(groupIdx: number, isExclusion = false) {
+    const set = isExclusion ? setExclusion : setExpression;
+    const state = isExclusion ? exclusion : expression;
+    const next = state.map((g, i) => (i === groupIdx ? [...g, blankPredicate()] : g));
+    set(next);
+  }
+
+  function addOr(isExclusion = false) {
+    const set = isExclusion ? setExclusion : setExpression;
+    const state = isExclusion ? exclusion : expression;
+    set([...state, [blankPredicate()]]);
+  }
+
+  function removePredicate(groupIdx: number, termIdx: number, isExclusion = false) {
+    const set = isExclusion ? setExclusion : setExpression;
+    const state = isExclusion ? exclusion : expression;
+    const g = [...state[groupIdx]];
+    g.splice(termIdx, 1);
+    const next = [...state];
+    // если группа опустела — удалим всю группу
+    if (g.length === 0) {
+      next.splice(groupIdx, 1);
+    } else {
+      next[groupIdx] = g;
+    }
+    set(next);
+  }
+
+  function updatePredicate<K extends keyof JsonPredicate>(
+    groupIdx: number,
+    termIdx: number,
+    key: K,
+    value: JsonPredicate[K],
+    isExclusion = false,
+  ) {
+    const set = isExclusion ? setExclusion : setExpression;
+    const state = isExclusion ? exclusion : expression;
+    const next = state.map((g, gi) =>
+      gi !== groupIdx
+        ? g
+        : g.map((p, pi) => {
+            if (pi !== termIdx) {
+              return p;
+            }
+            const updated: JsonPredicate = { ...p, [key]: value };
+            // Бизнес-правила: если type=time → operator=between и value → маска A-B
+            if (key === 'type') {
+              if (value === 'time') {
+                updated.operator = 'between';
+                // если не похоже на диапазон, сбросим value
+                if (!/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(updated.value)) {
+                  updated.value = '';
+                }
+              } else {
+                // float — если был between, можно оставить, но чаще НЕ between
+                if (updated.operator === 'between') {
+                  updated.operator = '>=';
+                  updated.value = '';
+                }
+              }
+            }
+            // Если operator сменился на between — обнулим value под диапазон
+            if (key === 'operator' && value === 'between') {
+              updated.value = '';
+            }
+            return updated;
+          }),
+    );
+    set(next);
+  }
+
+  async function handleSave() {
+    if (isInvalid) {
+      toaster.push(
+        <Message type="error" closable>
+          Заполните обязательные поля: {errors.join('; ')}
+        </Message>,
+        { duration: 3000 },
+      );
+      return;
+    }
+    try {
+      setSaving(true);
+      // У тебя уже есть пайплайн под JSON → (если надо) валидировать парсером — можешь тут прогнать.
+      // Но этот конструктор уже генерит готовый JSON «BuiltRule».
+      const out: BuiltRule = { expression, exclusion };
+      onSave(out);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} size="lg" className="rb-modal">
+      <Modal.Header>
+        <Modal.Title>Конструктор правила</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        {/* EXPRESSION */}
+        <Section
+          title="Expression"
+          groups={expression}
+          dicts={dicts}
+          onAddAnd={(gi) => addAnd(gi, false)}
+          onAddOr={() => addOr(false)}
+          onRemove={(gi, ti) => removePredicate(gi, ti, false)}
+          onChange={(gi, ti, key, val) => updatePredicate(gi, ti, key, val, false)}
+        />
+
+        <Divider />
+
+        {/* EXCLUSION */}
+        <Section
+          title="Exclusion (опционально)"
+          groups={exclusion}
+          dicts={dicts}
+          onAddAnd={(gi) => addAnd(gi, true)}
+          onAddOr={() => addOr(true)}
+          onRemove={(gi, ti) => removePredicate(gi, ti, true)}
+          onChange={(gi, ti, key, val) => updatePredicate(gi, ti, key, val, true)}
+        />
+
+        {errors.length > 0 && (
+          <div className="rb-errors">
+            {errors.map((e, i) => (
+              <div key={i} className="rb-error">
+                {e}
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button appearance="subtle" onClick={onClose}>
+          Отмена
+        </Button>
+        <Button appearance="primary" loading={saving} disabled={isInvalid} onClick={handleSave}>
+          Сохранить
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
+/* ---------- Подсекция: список OR-групп; внутри — AND-элементы ---------- */
+
+function Section({
+  title,
+  groups,
+  dicts,
+  onAddAnd,
+  onAddOr,
+  onRemove,
+  onChange,
+}: {
+  title: string;
+  groups: Expression;
+  dicts: RuleDictionaries;
+  onAddAnd: (groupIdx: number) => void;
+  onAddOr: () => void;
+  onRemove: (groupIdx: number, termIdx: number) => void;
+  onChange: <K extends keyof JsonPredicate>(
+    groupIdx: number,
+    termIdx: number,
+    key: K,
+    value: JsonPredicate[K],
+  ) => void;
+}) {
+  return (
+    <div className="rb-section">
+      <h4>{title}</h4>
+      {groups.map((andGroup, gi) => (
+        <div key={gi} className="rb-or-group">
+          <div className="rb-and-list">
+            {andGroup.map((p, ti) => (
+              <PredicateRow
+                key={ti}
+                pred={p}
+                dicts={dicts}
+                onChange={(k, v) => onChange(gi, ti, k, v)}
+                onRemove={() => onRemove(gi, ti)}
+              />
+            ))}
+            <IconButton
+              size="sm"
+              appearance="subtle"
+              onClick={() => onAddAnd(gi)}
+              title="Добавить AND"
+              className="plus-and"
+            >
+              <Plus size={16} />
+              &nbsp;AND
+            </IconButton>
+          </div>
+          {gi < groups.length - 1 && <div className="rb-or-sep">OR</div>}
+        </div>
+      ))}
+      <Button appearance="ghost" onClick={onAddOr} startIcon={<SquarePlus size={16} />}>
+        Добавить OR-группу
+      </Button>
+    </div>
+  );
+}
+
+/* ---------- Строка предиката ---------- */
+
+function PredicateRow({
+  pred,
+  dicts,
+  onChange,
+  onRemove,
+}: {
+  pred: JsonPredicate;
+  dicts: RuleDictionaries;
+  onChange: <K extends keyof JsonPredicate>(key: K, value: JsonPredicate[K]) => void;
+  onRemove: () => void;
+}) {
+  const ops = dicts.operatorsByType[pred.type];
+
+  // для time — редактор диапазона "HH:MM:SS-HH:MM:SS"
+  const isTime = pred.type === 'time';
+  const isBetween = pred.operator === 'between';
+
+  return (
+    <div className="rb-row">
+      {/* name */}
+      <SelectPicker
+        data={dicts.names.map((n) => ({ label: n, value: n }))}
+        value={pred.name || undefined}
+        onChange={(v) => onChange('name', v ?? '')}
+        placeholder="name"
+        style={{ width: 180 }}
+        cleanable
+        searchable
+      />
+      {/* type */}
+      <SelectPicker
+        data={dicts.valueTypes.map((t) => ({ label: t, value: t }))}
+        value={pred.type}
+        onChange={(v) => onChange('type', (v ?? 'float') as ValueType)}
+        style={{ width: 120 }}
+      />
+      {/* operator */}
+      <SelectPicker
+        data={ops.map((o) => ({ label: o, value: o }))}
+        value={pred.operator}
+        onChange={(v) => onChange('operator', (v ?? ops[0]) as Operator)}
+        style={{ width: 130 }}
+        disabled={isTime} // по ТЗ для time — только between
+      />
+
+      {/* value */}
+      {isTime && isBetween ? (
+        <TimeRangeInput value={pred.value} onChange={(v) => onChange('value', v)} />
+      ) : (
+        <Input
+          placeholder="value"
+          value={pred.value}
+          onChange={(v) => onChange('value', String(v))}
+          style={{ width: 220 }}
+        />
+      )}
+
+      {/* inversion */}
+      <Checkbox checked={pred.inversion} onChange={(v, checked) => onChange('inversion', checked)}>
+        NOT
+      </Checkbox>
+
+      <IconButton appearance="subtle" onClick={onRemove} title="Удалить предикат">
+        <Trash2 size={16} />
+      </IconButton>
+    </div>
+  );
+}
+
+/* ---------- Простой ввод диапазона времени ---------- */
+
+function TimeRangeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  // value в формате "HH:MM:SS-HH:MM:SS"
+  const [a, b] = value.split('-');
+  return (
+    <div className="rb-time">
+      <TimeInput
+        value={a ?? ''}
+        onChange={(v) => onChange(`${v || ''}-${b || ''}`)}
+        placeholder="HH:MM:SS"
+      />
+      <span>—</span>
+      <TimeInput
+        value={b ?? ''}
+        onChange={(v) => onChange(`${a || ''}-${v || ''}`)}
+        placeholder="HH:MM:SS"
+      />
+    </div>
+  );
+}
+
+function TimeInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <Input
+      value={value}
+      onChange={(v) => {
+        const s = String(v)
+          .replace(/[^\d:]/g, '')
+          .slice(0, 8);
+        onChange(s);
+      }}
+      placeholder={placeholder}
+      style={{ width: 120 }}
+    />
+  );
+}
+
+/* ---------- Валидация ---------- */
+
+function validateRule(expr: Expression, excl: Expression): string[] {
+  const errs: string[] = [];
+  const checkGroup = (g: AndGroup, gi: number, kind: 'expr' | 'excl') => {
+    if (g.length === 0) {
+      errs.push(`${kind === 'expr' ? 'Expression' : 'Exclusion'}: пустая AND-группа #${gi + 1}`);
+    }
+    g.forEach((p, ti) => {
+      if (!p.name) {
+        errs.push(`Не заполнено name (группа ${gi + 1}, терм ${ti + 1})`);
+      }
+      if (!p.type) {
+        errs.push(`Не заполнен type (группа ${gi + 1}, терм ${ti + 1})`);
+      }
+      if (!p.operator) {
+        errs.push(`Не заполнен operator (группа ${gi + 1}, терм ${ti + 1})`);
+      }
+      if (!p.value) {
+        errs.push(`Не заполнен value (группа ${gi + 1}, терм ${ti + 1})`);
+      }
+
+      if (p.type === 'time') {
+        if (p.operator !== 'between') {
+          errs.push(`Для типа time оператор всегда BETWEEN (группа ${gi + 1}, терм ${ti + 1})`);
+        }
+        if (p.value && !/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(p.value)) {
+          errs.push(
+            `Некорректный формат времени HH:MM:SS-HH:MM:SS (группа ${gi + 1}, терм ${ti + 1})`,
+          );
+        } else if (p.value) {
+          const [A, B] = p.value.split('-');
+          if (!isTimeLt(A, B)) {
+            errs.push(
+              `Левая граница времени должна быть меньше правой (группа ${gi + 1}, терм ${ti + 1})`,
+            );
+          }
+        }
+      } else {
+        // float
+        if (p.operator === 'between') {
+          // допустим и между числами "a-b"
+          if (!/^\d+(\.\d+)?-\d+(\.\d+)?$/.test(p.value)) {
+            errs.push(
+              `Для float BETWEEN ожидается "a-b" (числа) (группа ${gi + 1}, терм ${ti + 1})`,
+            );
+          } else {
+            const [a, b] = p.value.split('-').map(Number);
+            if (!(a < b)) {
+              errs.push(
+                `Для float BETWEEN левый операнд должен быть < правого (группа ${gi + 1}, терм ${ti + 1})`,
+              );
+            }
+          }
+        } else {
+          if (!/^\d+(\.\d+)?$/.test(p.value)) {
+            errs.push(`Для float ожидается число (группа ${gi + 1}, терм ${ti + 1})`);
+          }
+        }
+      }
+    });
+  };
+
+  if (expr.length === 0) {
+    errs.push('Нужно задать хотя бы одну OR-группу в Expression');
+  }
+  expr.forEach((g, i) => checkGroup(g, i, 'expr'));
+  excl.forEach((g, i) => checkGroup(g, i, 'excl'));
+  return errs;
+}
+
+function isTimeLt(a: string, b: string) {
+  const toSec = (s: string) => {
+    const [hh, mm, ss] = s.split(':').map(Number);
+    return hh * 3600 + mm * 60 + ss;
+  };
+  return toSec(a) < toSec(b);
+}

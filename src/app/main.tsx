@@ -9,6 +9,7 @@ import { router } from './router';
 
 import { CustomProvider } from 'rsuite';
 
+import 'rsuite/dist/rsuite-no-reset.min.css';
 // const { worker } = await import('@/shared/utils/mocks/browser');
 // await worker.start({ onUnhandledRequest: 'bypass' });
 

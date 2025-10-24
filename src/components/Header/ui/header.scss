@@ -1,6 +1,7 @@
 .header {
   position: sticky;
   top: 0;
+  z-index: 15;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -9,27 +10,25 @@
   background: var(--bg-header);
   padding: var(--pad-xs);
   color: var(--header-text);
-  .logo{
+  .logo {
     display: flex;
     max-height: 120%;
     margin-left: 128px;
-    > div{
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        max-height: 100px;
-        .app-name{
-            font-family: var(--saira);
-            font-size: 2rem;
-            line-height: 36px;
-        }
-        h5{
-            font-family: var(--pt-sans);
-            font-size: 0.85rem;
-            color: var(--gray-100);
-        }
+    > div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-height: 100px;
+      .app-name {
+        font-family: var(--saira);
+        font-size: 2rem;
+        line-height: 36px;
+      }
+      h5 {
+        font-family: var(--pt-sans);
+        font-size: 0.85rem;
+        color: var(--gray-100);
+      }
     }
-    
   }
-  
 }
