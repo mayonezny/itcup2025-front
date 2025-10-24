@@ -1,9 +1,8 @@
 import axios, { AxiosError } from 'axios';
 
 export const api = axios.create({
-  // baseURL: API_URL,
-  withCredentials: true,
-  timeout: 15000
+  baseURL: '/api',
+  timeout: 15000,
 });
 
 export function axiosErrorMessage(err: unknown): string {

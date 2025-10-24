@@ -1,7 +1,7 @@
-import type { Transaction, status } from "../types";
+import type { Transaction, status } from '../types';
 
-export interface statuses{
-    statuses: status[]
+export interface statuses {
+  statuses: status[];
 }
 
 export type unionStatus = Transaction & statuses;

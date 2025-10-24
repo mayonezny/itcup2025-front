@@ -1,8 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
+import rulesReducer from '@/features/rules/store/rulesSlice';
 import transactionsReducer from '@/features/transactions/store/transactionSlice';
-
-import rulesReducer from './store/rules/rulesSlice';
 
 export const rootReducer = combineReducers({
   rulesReducer,

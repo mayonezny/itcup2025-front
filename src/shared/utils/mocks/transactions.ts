@@ -6,8 +6,6 @@ import type { unionStatus } from '@/features/transactions/dto';
 import type { Page, Transaction } from '@/features/transactions/types';
 import { API_TRANSACTIONS } from '@/shared/endpoints';
 
-const API = '/api';
-
 // сгенерим фиксированный пул "больших" данных
 const ALL: unionStatus[] = Array.from({ length: 1234 }, (_, i) => ({
   id: i + 1,

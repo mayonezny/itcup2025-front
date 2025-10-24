@@ -1,3 +1,4 @@
+// src/features/rules/ui/RuleElement.tsx
 import {
   Plus,
   SquareArrowDown,
@@ -6,159 +7,203 @@ import {
   SquarePen,
   Trash2,
 } from 'lucide-react';
-
-import { useAppDispatch } from '@/redux-rtk/hooks';
-import {
-  addRule,
-  changePriority,
-  deleteRule,
-  updateRule,
-} from '@/redux-rtk/store/rules/rulesSlice';
-import { InlineEditableRS } from '@/shared/InlineEditable';
-
-import type { Rule as RuleElementProps } from '../types';
-
-import './rule-element.scss';
-
 import React from 'react';
 
-import { buildRuleJson } from '@/shared/lang/api';
+import type { RuleObject } from '@/features/rules/dto';
+import {
+  addRuleLoc,
+  changePriority,
+  deleteRuleLoc,
+  updateRuleLoc,
+} from '@/features/rules/store/rulesSlice';
+import { addRule, deleteRule, updateRule } from '@/features/rules/store/rulesThunks';
+import type { FilterType, RuleValue } from '@/features/rules/types';
+import { useAppDispatch } from '@/redux-rtk/hooks';
+import { LOGIN } from '@/shared/constants';
+import { PopupEditor } from '@/shared/PopupEditor';
+import './rule-element.scss';
 
-type elemState = 'view' | 'edit' | 'new';
+type ElemState = 'view' | 'edit' | 'new';
 
 export const RuleElementHead = () => (
-  <div className="head rule-element">
-    <button className="num" title="Приоритет">
+  <div className="rule-row rule-row--head">
+    <div className="col col--prio" title="Приоритет">
       #
-    </button>
-    <div className="rule">Правило</div>
-    <div className="ex">Исключение</div>
-    <div className="delete-icon" />
-    <div className="edit-icon" />
-    <div className="edit-icon" />
-    <div className="priorities-icons" />
+    </div>
+    <div className="col col--type">Тип</div>
+    <div className="col col--action">Action</div>
+    <div className="col col--value">Значение правила (JSON)</div>
+    <div className="col col--icons" />
   </div>
 );
 
 export const RuleElement: React.FC<
-  RuleElementProps & {
-    isEditable?: boolean;
-    isNew?: boolean;
-    state?: elemState;
-  }
-> = ({ id, rule, priority, exclusion, isEditable, isNew, state = 'view' }) => {
+  RuleObject & { isEditable?: boolean; isNew?: boolean; state?: ElemState }
+> = ({
+  id,
+  isActive,
+  filterType = 'alg',
+  action,
+  ruleValue,
+  priority,
+  isEditable,
+  isNew,
+  state = 'view',
+}) => {
   const dispatch = useAppDispatch();
-  const [elemState, setElemState] = React.useState<elemState>(state);
-  const [editableState, setEditableState] = React.useState(isEditable || false);
+  const [elemState, setElemState] = React.useState<ElemState>(state);
+  const [editable, setEditable] = React.useState<boolean>(Boolean(isEditable));
+  const [ft, setFt] = React.useState<FilterType>(filterType);
+  const [act, setAct] = React.useState<string>(action);
+  const [val, setVal] = React.useState<RuleValue>(ruleValue);
+  const [submitErr, setSubmitErr] = React.useState<string | undefined>(undefined);
 
-  const [ruleState, setRuleState] = React.useState(rule);
-  const [exState, setExState] = React.useState(exclusion || '');
+  const anchorRef = React.useRef<HTMLButtonElement>(null);
+  const [editorOpen, setEditorOpen] = React.useState(false);
 
-  const [submitErr, setSubmitErr] = React.useState<string>();
+  function preview(v: RuleValue): string {
+    const s = JSON.stringify(v);
+    return s.length > 80 ? `${s.slice(0, 80)}…` : s;
+  }
 
-  const clearInputs = () => {
-    setRuleState('');
-    setExState('');
-    setSubmitErr(undefined);
-  };
-
-  // handleAdd
-  const handleAdd = async () => {
-    setSubmitErr(undefined);
+  async function handleAdd() {
     try {
-      const compiled = await buildRuleJson(ruleState, exState); // жёсткая валидация
-      dispatch(addRule({ rule: ruleState, exclusion: exState, compiled }));
-      setEditableState(false);
-      clearInputs();
+      setSubmitErr(undefined);
+      const payload: RuleObject = {
+        id,
+        isActive,
+        filterType: ft,
+        action: actFor(ft, act),
+        ruleValue: val,
+        priority,
+      };
+      dispatch(addRuleLoc(payload));
+      dispatch(addRule({ rule: payload, login: LOGIN }));
+      setEditable(false);
       setElemState('new');
-      // очистка при желании
-      // setRuleState(''); setExState('');
     } catch (e) {
       setSubmitErr(e instanceof Error ? e.message : String(e));
     }
-  };
+  }
 
-  // handleUpdate
-  const handleUpdate = async () => {
-    setSubmitErr(undefined);
+  async function handleUpdate() {
     try {
-      const compiled = await buildRuleJson(ruleState, exState);
-      dispatch(updateRule({ id, changes: { rule: ruleState, exclusion: exState, compiled } }));
-      setEditableState(false);
+      setSubmitErr(undefined);
+      const payload: RuleObject = {
+        id,
+        isActive,
+        filterType: ft,
+        action: actFor(ft, act),
+        ruleValue: val,
+        priority,
+      };
+      dispatch(
+        updateRuleLoc({ id, changes: { filterType: ft, action: actFor(ft, act), ruleValue: val } }),
+      );
+      dispatch(updateRule({ rule: payload, login: LOGIN }));
+      setEditable(false);
     } catch (e) {
       setSubmitErr(e instanceof Error ? e.message : String(e));
     }
-  };
+  }
 
-  const handlePriorityUp = () => {
-    dispatch(changePriority({ id, priority: priority - 1 }));
-  };
-
-  const handlePriorityDown = () => {
-    dispatch(changePriority({ id, priority: priority + 1 }));
-  };
-
-  const handleDelete = () => {
-    dispatch(deleteRule({ id }));
-  };
-
-  const handleActivateEditing = () => {
-    setEditableState(true);
-  };
-
+  async function handleDelete() {
+    try {
+      setSubmitErr(undefined);
+      dispatch(deleteRuleLoc({ id }));
+      dispatch(deleteRule({ id, login: LOGIN }));
+      setEditable(false);
+    } catch (e) {
+      setSubmitErr(e instanceof Error ? e.message : String(e));
+    }
+  }
   return elemState === 'view' ? (
-    <div className="rule-element">
-      <div className="num">{priority}</div>
-      <div className="rule" onClick={() => setEditableState(true)}>
-        <InlineEditableRS
-          value={ruleState}
-          onCommit={(v) => setRuleState(v)}
-          onClick={handleActivateEditing}
-          isEditing={editableState}
+    <div className="rule-row">
+      <div className="col col--prio">{priority}</div>
+
+      <div className="col col--type">
+        {editable ? (
+          <select className="sel" value={ft} onChange={(e) => setFt(e.target.value as FilterType)}>
+            <option value="alg">ALG</option>
+            <option value="ml">ML</option>
+          </select>
+        ) : (
+          <span className="tag">{ft.toUpperCase()}</span>
+        )}
+      </div>
+
+      <div className="col col--action">
+        {
+          ft === 'ml' ? (
+            editable ? (
+              <input
+                className="inp"
+                value={act}
+                onChange={(e) => setAct(e.target.value)}
+                placeholder="действие модели"
+              />
+            ) : (
+              <span className="truncate" title={act}>
+                {act || '—'}
+              </span>
+            )
+          ) : (
+            <span className="muted">action</span>
+          ) /* для ALG не показываем редактирование */
+        }
+      </div>
+
+      <div className="col col--value">
+        <button
+          ref={anchorRef}
+          type="button"
+          className={`btn-json ${editable ? 'btn-json--edit' : ''}`}
+          onClick={() => setEditorOpen(true)}
+          title="Открыть JSON редактор"
+        >
+          {preview(val)}
+        </button>
+        <PopupEditor
+          open={editorOpen && editable}
+          anchorRef={anchorRef}
+          filterType={ft}
+          valueText={JSON.stringify(val)}
+          onApplyText={(v) => setVal(JSON.parse(v))}
+          onClose={() => setEditorOpen(false)}
         />
       </div>
-      <div className="ex" onClick={() => setEditableState(true)}>
-        <InlineEditableRS
-          value={exState}
-          onCommit={(v) => setExState(v)}
-          onClick={handleActivateEditing}
-          isEditing={editableState}
-        />
-      </div>
-      <div className="rule-element-icons">
-        {!editableState && (
-          <div className="priorities-icons">
-            <button onClick={handlePriorityUp} title="Повысить приоритет">
+
+      <div className="col col--icons">
+        {!editable && (
+          <div className="prio">
+            <button
+              onClick={() => dispatch(changePriority({ id, priority: priority - 1 }))}
+              title="Повысить"
+            >
               <SquareArrowUp />
             </button>
-            <button onClick={handlePriorityDown} title="Понизить приоритет">
+            <button
+              onClick={() => dispatch(changePriority({ id, priority: priority + 1 }))}
+              title="Понизить"
+            >
               <SquareArrowDown />
             </button>
           </div>
         )}
-
-        <button className="delete-icon" onClick={handleDelete} title="Удалить правило">
+        <button className="danger" onClick={handleDelete} title="Удалить">
           <Trash2 />
         </button>
-        {!editableState && elemState === 'view' && (
-          <button
-            className="edit-icon"
-            onClick={() => setEditableState(true)}
-            title="Редактировать правило"
-          >
+        {!editable ? (
+          <button onClick={() => setEditable(true)} title="Редактировать">
             <SquarePen />
           </button>
-        )}
-        {editableState && (
-          <button
-            className="confirm edit-icon"
-            onClick={isNew ? handleAdd : handleUpdate}
-            title="Подтвердить редактирование"
-          >
+        ) : (
+          <button className="ok" onClick={isNew ? handleAdd : handleUpdate} title="Сохранить">
             <SquareCheckBig />
           </button>
         )}
       </div>
+
       {submitErr && (
         <div className="rule-errors">
           {submitErr.split('\n').map((m, i) => (
@@ -171,10 +216,10 @@ export const RuleElement: React.FC<
     </div>
   ) : (
     <div
-      className="add rule-element"
+      className="rule-add"
       onClick={() => {
         setElemState('view');
-        setEditableState(true);
+        setEditable(true);
         setSubmitErr(undefined);
       }}
     >
@@ -182,3 +227,7 @@ export const RuleElement: React.FC<
     </div>
   );
 };
+
+function actFor(ft: FilterType, action: string): string {
+  return ft === 'alg' ? 'action' : action; // для ALG фикс
+}

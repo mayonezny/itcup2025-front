@@ -26,15 +26,30 @@ export const RuleTable = () => {
           </React.Fragment>
         ))
       )}
-
       <RuleElement
         isEditable
         isNew
         state={'new'}
-        id={rules.length + 1}
-        rule={''}
+        id={rules ? rules.length + 1 : 0}
         priority={0}
-        exclusion={''}
+        isActive={false}
+        filterType={'alg'}
+        action={''}
+        ruleValue={{
+          expression: [
+            [
+              { name: 'amount', type: 'float', inversion: false, operator: '>', value: '10.0' },
+              {
+                name: 'timestamp',
+                type: 'time',
+                inversion: true,
+                operator: 'between',
+                value: '00:00:00-12:00:00',
+              },
+            ],
+          ],
+          exclusion: [],
+        }}
       />
     </div>
   );
