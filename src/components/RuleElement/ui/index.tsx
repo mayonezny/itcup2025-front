@@ -220,6 +220,7 @@ export const RuleElement: React.FC<
           onClose={() => setOpen(false)}
           dicts={dicts}
           initial={currentRule}
+          ruleKey={String(id)}
           onSave={(built: BuiltRule) => {
             console.log(built);
             setVal(built);

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "transaction_id",
+    "type": "string"
+  },
+  {
+    "name": "timestamp",
+    "type": "timestamp"
+  },
+  {
+    "name": "sender_account",
+    "type": "string"
+  },
+  {
+    "name": "receiver_account",
+    "type": "string"
+  },
+  {
+    "name": "amount",
+    "type": "double"
+  },
+  {
+    "name": "transaction_type",
+    "type": "string"
+  },
+  {
+    "name": "merchant_category",
+    "type": "string"
+  },
+  {
+    "name": "location",
+    "type": "string"
+  },
+  {
+    "name": "device_used",
+    "type": "string"
+  },
+  {
+    "name": "is_fraud",
+    "type": "boolean"
+  },
+  {
+    "name": "fraud_type",
+    "type": "string"
+  },
+  {
+    "name": "time_since_last_transaction",
+    "type": "double"
+  },
+  {
+    "name": "spending_deviation_score",
+    "type": "double"
+  },
+  {
+    "name": "velocity_score",
+    "type": "integer"
+  },
+  {
+    "name": "geo_anomaly_score",
+    "type": "double"
+  },
+  {
+    "name": "payment_channel",
+    "type": "string"
+  },
+  {
+    "name": "ip_address",
+    "type": "string"
+  },
+  {
+    "name": "device_hash",
+    "type": "string"
+  }
+]

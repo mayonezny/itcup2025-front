@@ -1,5 +1,5 @@
+// src/shared/RuleBuilderModal/index.tsx
 /* eslint-disable prettier/prettier */
-import { Plus, SquarePlus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Button,
@@ -14,98 +14,108 @@ import {
 } from 'rsuite';
 
 import type { AlgRuleValue } from '@/features/rules/types';
+import type {
+  AndGroup,
+  BuiltRule,
+  Expression,
+  JsonPredicate,
+  Operator,
+  ValueType,
+} from '@/shared/lang/types';
+import { RuleDrafts } from '@/shared/rule-drafts'; // <-- добавлено
 import './rule-builder-modal.scss';
-//
-// Типы, совпадающие с твоими
-//
-export type Operator = '>=' | '>' | '<=' | '<' | '=' | 'between';
-export type ValueType = 'float' | 'time';
 
-export interface JsonPredicate {
-  name: string;
-  type: ValueType;
-  inversion: boolean;
-  operator: Operator;
-  value: string; // "5000.0" | "00:00:00-12:30:00"
-}
-export type AndGroup = JsonPredicate[];
-export type Expression = AndGroup[];
+import { Plus, SquarePlus, Trash2 } from 'lucide-react';
 
-export interface BuiltRule {
-  expression: Expression;
-  exclusion: Expression;
-}
+// --- типы как у тебя (Operator/ValueType/JsonPredicate/.../BuiltRule) ---
 
-//
-// Плейсхолдеры справочников, которые прилетают с бэка.
-// Передай в пропсах реальный набор (см. интерфейс RuleDictionaries ниже).
-//
 export interface RuleDictionaries {
-  names: string[]; // ['COUNT','TIME', ...]
-  operatorsByType: Record<ValueType, Operator[]>; // { float: ['>=','>','<=','<','='], time: ['between'] }
-  valueTypes: ValueType[]; // ['float','time']
+  names: string[];
+  operatorsByType: Record<ValueType, Operator[]>;
+  valueTypes: ValueType[];
 }
 
-//
-// Пропсы модалки
-//
 export function RuleBuilderModal({
   open,
   onClose,
   dicts,
   initial,
   onSave,
-  persistOnClose = true,
+  ruleKey, // <-- добавлено
+  clearDraftOnSave, // <-- опция: чистить ли черновик после Save
 }: {
   open: boolean;
   onClose: () => void;
   dicts: RuleDictionaries;
-  initial?: AlgRuleValue; // чтобы редактировать уже готовое правило
+  initial?: AlgRuleValue;
   onSave: (rule: BuiltRule) => void;
-  persistOnClose?: boolean;
+  ruleKey: string; // ОБЯЗАТЕЛЬНО передаём из строки
+  clearDraftOnSave?: boolean;
 }) {
-  // Локальное состояние конструктора
+  // 1) Посев значений: черновик этого ruleKey > initial > заготовка
   const [expression, setExpression] = useState<Expression>(
-    initial?.expression ?? [[blankPredicate()]],
+    RuleDrafts.get(ruleKey)?.expression ?? initial?.expression ?? [[blankPredicate()]],
   );
-  const [exclusion, setExclusion] = useState<Expression>(initial?.exclusion ?? []);
+  const [exclusion, setExclusion] = useState<Expression>(
+    RuleDrafts.get(ruleKey)?.exclusion ?? initial?.exclusion ?? [],
+  );
   const [saving, setSaving] = useState(false);
 
+  // 2) При открытии — ещё раз синхронизировать с сейфом (на случай обновления initial извне)
   useEffect(() => {
     if (!open) {
       return;
     }
-    if (initial) {
+    const draft = RuleDrafts.get(ruleKey);
+    if (draft) {
+      setExpression(draft.expression?.length ? draft.expression : [[blankPredicate()]]);
+      setExclusion(draft.exclusion ?? []);
+    } else if (initial) {
       setExpression(initial.expression?.length ? initial.expression : [[blankPredicate()]]);
       setExclusion(initial.exclusion ?? []);
+    } else {
+      setExpression([[blankPredicate()]]);
+      setExclusion([]);
     }
-  }, [open, initial]);
+  }, [open, ruleKey, initial]);
 
+  // 3) Автосохранение черновика для конкретного ruleKey
   useEffect(() => {
-    if (open || persistOnClose) {
-      return;
-    }
-    if (initial) {
-      setExpression(initial.expression?.length ? initial.expression : [[blankPredicate()]]);
-      setExclusion(initial.exclusion ?? []);
-    }
-  }, [open, persistOnClose, initial]);
+    const draft: AlgRuleValue = { expression, exclusion };
+    RuleDrafts.set(ruleKey, draft);
+  }, [ruleKey, expression, exclusion]);
 
-  // Вычислим ошибки для дизейбла кнопки «Сохранить»
   const errors = useMemo(() => validateRule(expression, exclusion), [expression, exclusion]);
   const isInvalid = errors.length > 0;
 
-  // Хелперы
   function blankPredicate(): JsonPredicate {
-    return {
-      name: '',
-      type: 'float',
-      inversion: false,
-      operator: '>=',
-      value: '',
-    };
+    return { name: '', type: 'float', inversion: false, operator: '>=', value: '' };
   }
 
+  // ... твои addAnd/addOr/removePredicate/updatePredicate — без изменений ...
+
+  async function handleSave() {
+    if (isInvalid) {
+      toaster.push(
+        <Message type="error" closable>
+          Заполните обязательные поля: {errors.join('; ')}
+        </Message>,
+        { duration: 3000 },
+      );
+      return;
+    }
+    try {
+      setSaving(true);
+      const out: BuiltRule = { expression, exclusion };
+      onSave(out);
+      if (clearDraftOnSave) {
+        RuleDrafts.delete(ruleKey); // очистить черновик только этого правила
+      }
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
   function addAnd(groupIdx: number, isExclusion = false) {
     const set = isExclusion ? setExclusion : setExpression;
     const state = isExclusion ? exclusion : expression;
@@ -177,28 +187,6 @@ export function RuleBuilderModal({
     set(next);
   }
 
-  async function handleSave() {
-    if (isInvalid) {
-      toaster.push(
-        <Message type="error" closable>
-          Заполните обязательные поля: {errors.join('; ')}
-        </Message>,
-        { duration: 3000 },
-      );
-      return;
-    }
-    try {
-      setSaving(true);
-      // У тебя уже есть пайплайн под JSON → (если надо) валидировать парсером — можешь тут прогнать.
-      // Но этот конструктор уже генерит готовый JSON «BuiltRule».
-      const out: BuiltRule = { expression, exclusion };
-      onSave(out);
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <Modal open={open} onClose={onClose} size="lg" className="rb-modal">
       <Modal.Header>
@@ -251,6 +239,8 @@ export function RuleBuilderModal({
       </Modal.Footer>
     </Modal>
   );
+
+  // ----- ниже — Section/PredicateRow/TimeRangeInput/validateRule без изменений -----
 }
 
 /* ---------- Подсекция: список OR-групп; внутри — AND-элементы ---------- */
