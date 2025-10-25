@@ -1,5 +1,5 @@
 // src/shared/RuleBuilderModal/index.tsx
-/* eslint-disable prettier/prettier */
+
 import { useEffect, useMemo, useState } from 'react';
 import {
   Button,
@@ -32,7 +32,7 @@ import { Plus, SquarePlus, Trash2 } from 'lucide-react';
 export interface RuleDictionaries {
   names: string[];
   operatorsByType: Record<ValueType, Operator[]>;
-  valueTypes: ValueType[];
+  valueTypes: string[];
 }
 
 export function RuleBuilderModal({
@@ -316,11 +316,12 @@ function PredicateRow({
   onChange: <K extends keyof JsonPredicate>(key: K, value: JsonPredicate[K]) => void;
   onRemove: () => void;
 }) {
-  const ops = dicts.operatorsByType[pred.type];
-
   // для time — редактор диапазона "HH:MM:SS-HH:MM:SS"
-  const isTime = pred.type === 'time';
   const isBetween = pred.operator === 'between';
+
+  const isTime = pred.type === 'time';
+  // безопасный фолбэк операторов: [] если ключа нет
+  const ops: Operator[] = dicts.operatorsByType[pred.type] ?? ['>=', '>', '<=', '<', '='];
 
   return (
     <div className="rb-row">
@@ -328,7 +329,9 @@ function PredicateRow({
       <SelectPicker
         data={dicts.names.map((n) => ({ label: n, value: n }))}
         value={pred.name || undefined}
-        onChange={(v) => onChange('name', v ?? '')}
+        onChange={(v) => {
+          onChange('name', v ?? '');
+        }}
         placeholder="name"
         style={{ width: 180 }}
         cleanable
@@ -343,9 +346,9 @@ function PredicateRow({
       />
       {/* operator */}
       <SelectPicker
-        data={ops.map((o) => ({ label: o, value: o }))}
+        data={ops.map((o) => ({ label: o, value: o })) ?? ''}
         value={pred.operator}
-        onChange={(v) => onChange('operator', (v ?? ops[0]) as Operator)}
+        onChange={(v) => onChange('operator', (v ?? ops[0] ?? '>=') as Operator)}
         style={{ width: 130 }}
         disabled={isTime} // по ТЗ для time — только between
       />
@@ -363,7 +366,7 @@ function PredicateRow({
       )}
 
       {/* inversion */}
-      <Checkbox checked={pred.inversion} onChange={(v, checked) => onChange('inversion', checked)}>
+      <Checkbox checked={pred.inversion} onChange={(_, checked) => onChange('inversion', checked)}>
         NOT
       </Checkbox>
 

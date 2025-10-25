@@ -26,8 +26,11 @@ import {
 import type { FilterType, RuleValue } from '@/features/rules/types';
 import { useAppDispatch } from '@/redux-rtk/hooks';
 import { LOGIN } from '@/shared/constants';
-import type { BuiltRule } from '@/shared/lang/types';
+import { FIELD_TYPES } from '@/shared/field-types';
+import type { BuiltMlRule, BuiltRule } from '@/shared/lang/types';
+import { MlRuleModal } from '@/shared/MlRuleModal/ui/index';
 import { RuleBuilderModal, type RuleDictionaries } from '@/shared/RuleBuilderModal';
+
 import './rule-element.scss';
 
 type ElemState = 'view' | 'edit' | 'new';
@@ -64,15 +67,25 @@ export const RuleElement: React.FC<
   const [act, setAct] = React.useState<string>(action);
   const [val, setVal] = React.useState<RuleValue>(ruleValue);
   const [submitErr, setSubmitErr] = React.useState<string | undefined>(undefined);
-  const [currentRule, setCurrentRule] = useState<BuiltRule | undefined>(undefined);
+  const [currentRule, setCurrentRule] = useState<BuiltRule | BuiltMlRule | undefined>(undefined);
 
   const anchorRef = React.useRef<HTMLButtonElement>(null);
 
   const [open, setOpen] = useState(false);
 
+  // Типы поля (если хочешь — используй в логике)
+
+  // Готовая Map<name, type>
+
+  // пример использования:
+  // FIELD_TYPES.get('amount') -> 'double'
+  const names: string[] = [];
+  FIELD_TYPES.forEach((_, k) => {
+    names.push(k);
+  });
   const dicts: RuleDictionaries = {
-    names: ['COUNT', 'TIME', 'AMOUNT', 'TIMESTAMP'],
-    valueTypes: ['float', 'time'],
+    names,
+    valueTypes: ['string', 'timestamp', 'double', 'boolean', 'integer'],
     operatorsByType: {
       float: ['>=', '>', '<=', '<', '='],
       time: ['between'],
@@ -215,19 +228,32 @@ export const RuleElement: React.FC<
         >
           {preview(val)}
         </button>
-        <RuleBuilderModal
-          open={open}
-          onClose={() => setOpen(false)}
-          dicts={dicts}
-          initial={currentRule}
-          ruleKey={String(id)}
-          onSave={(built: BuiltRule) => {
-            console.log(built);
-            setVal(built);
-            console.log('SAVE', built);
-            setCurrentRule(built);
-          }}
-        />
+        {ft === 'ml' ? (
+          <MlRuleModal
+            open={open}
+            onClose={() => setOpen(false)}
+            ruleKey={`ml:${id}`}
+            availableFeatures={Array.from(FIELD_TYPES.keys())}
+            initial={(val as BuiltMlRule) ?? ''}
+            onSave={(ml) => {
+              setVal(ml);
+              setCurrentRule(ml);
+            }}
+          />
+        ) : (
+          <RuleBuilderModal
+            open={open}
+            onClose={() => setOpen(false)}
+            dicts={dicts}
+            initial={currentRule as BuiltRule}
+            ruleKey={String(id)}
+            onSave={(built: BuiltRule) => {
+              setVal(built);
+
+              setCurrentRule(built);
+            }}
+          />
+        )}
       </div>
 
       <div className="col col--icons">
@@ -241,9 +267,12 @@ export const RuleElement: React.FC<
             </button>
           </div>
         )}
-        <button className="danger" onClick={handleDelete} title="Удалить">
-          <Trash2 />
-        </button>
+        {!editable && (
+          <button className="danger" onClick={handleDelete} title="Удалить">
+            <Trash2 />
+          </button>
+        )}
+
         {!editable ? (
           <button onClick={() => setEditable(true)} title="Редактировать">
             <SquarePen />
