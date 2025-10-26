@@ -21,7 +21,10 @@ export function AndGroupEditor({ group, onChange, title }: Props) {
   };
   const remove = (idx: number) => onChange(group.filter((_, i) => i !== idx));
   const add = () =>
-    onChange([...group, { name: '', type: 'float', operator: '>=', value: '0', inversion: false }]);
+    onChange([
+      ...group,
+      { name: '', type: 'double', operator: '>=', value: '0', inversion: false },
+    ]);
 
   return (
     <div className="rb-and">

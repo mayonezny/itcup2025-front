@@ -8,8 +8,8 @@ import type { JsonPredicate, Operator, ValueType } from '@/shared/lang/types';
 import './rule-builder-modal.scss';
 
 const TYPE_OPTIONS: { label: string; value: ValueType }[] = [
-  { label: 'float', value: 'float' },
-  { label: 'time', value: 'time' },
+  { label: 'float', value: 'double' },
+  { label: 'time', value: 'timestamp' },
 ];
 
 const OP_OPTIONS_BASE: Operator[] = ['>=', '>', '<=', '<', '=', 'between'];
@@ -49,9 +49,9 @@ export function PredicateRow({ value, onChange, onDelete }: Props) {
         value={value.type}
         onChange={(v) => {
           const nextType = (v ?? 'float') as ValueType;
-          const nextOp = nextType === 'time' ? 'between' : value.operator;
+          const nextOp = nextType === 'timestamp' ? 'between' : value.operator;
           const nextVal =
-            nextType === 'time'
+            nextType === 'timestamp'
               ? value.operator === 'between'
                 ? value.value
                 : '00:00:00-12:00:00'
@@ -71,15 +71,15 @@ export function PredicateRow({ value, onChange, onDelete }: Props) {
         data={opOptions}
         placeholder="operator"
         value={value.operator}
-        disabled={value.type === 'time'} // time → только between
+        disabled={value.type === 'timestamp'} // timestamp → только between
         onChange={(v) => {
           const nextOp = (v ?? '>=') as Operator;
           const nextVal =
             nextOp === 'between'
-              ? value.type === 'time'
+              ? value.type === 'timestamp'
                 ? '00:00:00-12:00:00'
                 : '0-1'
-              : value.type === 'time'
+              : value.type === 'timestamp'
                 ? '00:00:00'
                 : '0';
           onChange({ ...value, operator: nextOp, value: nextVal });
@@ -94,13 +94,13 @@ export function PredicateRow({ value, onChange, onDelete }: Props) {
           <Input
             value={from ?? ''}
             onChange={(v) => onChange({ ...value, value: `${v}-${to ?? ''}` })}
-            placeholder={value.type === 'time' ? 'HH:MM:SS' : 'from'}
+            placeholder={value.type === 'timestamp' ? 'HH:MM:SS' : 'from'}
           />
           <InputGroup.Addon>—</InputGroup.Addon>
           <Input
             value={to ?? ''}
             onChange={(v) => onChange({ ...value, value: `${from ?? ''}-${v}` })}
-            placeholder={value.type === 'time' ? 'HH:MM:SS' : 'to'}
+            placeholder={value.type === 'timestamp' ? 'HH:MM:SS' : 'to'}
           />
         </InputGroup>
       ) : (
@@ -108,7 +108,7 @@ export function PredicateRow({ value, onChange, onDelete }: Props) {
           className="rb-cell rb-value"
           value={value.value}
           onChange={(v) => onChange({ ...value, value: String(v) })}
-          placeholder={value.type === 'time' ? 'HH:MM:SS' : 'value'}
+          placeholder={value.type === 'timestamp' ? 'HH:MM:SS' : 'value'}
         />
       )}
 

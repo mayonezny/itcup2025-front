@@ -156,7 +156,7 @@ export function RuleBuilderModal({
     const set = isExclusion ? setExclusion : setExpression;
 
     set((prev) => {
-      const state = isExclusion ? exclusion : expression; // можно и prev, если вынесешь оба в один set
+      // const _state = isExclusion ? exclusion : expression; // можно и prev, если вынесешь оба в один set
       const base = isExclusion ? (prev as Expression) : (prev as Expression);
 
       const next = base.map((g, gi) =>
@@ -343,7 +343,6 @@ function PredicateRow({
   onRemove: () => void;
 }) {
   // для time — редактор диапазона "HH:MM:SS-HH:MM:SS"
-  const isBetween = pred.operator === 'between';
 
   // безопасный фолбэк операторов: [] если ключа нет
   const ops: Operator[] = dicts.operatorsByType[pred.type] ?? ['>=', '>', '<=', '<', '='];
@@ -401,50 +400,6 @@ function PredicateRow({
 
 /* ---------- Простой ввод диапазона времени ---------- */
 
-function TimeRangeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  // value в формате "HH:MM:SS-HH:MM:SS"
-  const [a, b] = value.split('-');
-  return (
-    <div className="rb-time">
-      <TimeInput
-        value={a ?? ''}
-        onChange={(v) => onChange(`${v || ''}-${b || ''}`)}
-        placeholder="HH:MM:SS"
-      />
-      <span>—</span>
-      <TimeInput
-        value={b ?? ''}
-        onChange={(v) => onChange(`${a || ''}-${v || ''}`)}
-        placeholder="HH:MM:SS"
-      />
-    </div>
-  );
-}
-
-function TimeInput({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <Input
-      value={value}
-      onChange={(v) => {
-        const s = String(v)
-          .replace(/[^\d:]/g, '')
-          .slice(0, 8);
-        onChange(s);
-      }}
-      placeholder={placeholder}
-      style={{ width: 120 }}
-    />
-  );
-}
-
 /* ---------- Валидация ---------- */
 
 function validateRule(expr: Expression, excl: Expression): string[] {
@@ -475,12 +430,4 @@ function validateRule(expr: Expression, excl: Expression): string[] {
   expr.forEach((g, i) => checkGroup(g, i, 'expr'));
   excl.forEach((g, i) => checkGroup(g, i, 'excl'));
   return errs;
-}
-
-function isTimeLt(a: string, b: string) {
-  const toSec = (s: string) => {
-    const [hh, mm, ss] = s.split(':').map(Number);
-    return hh * 3600 + mm * 60 + ss;
-  };
-  return toSec(a) < toSec(b);
 }

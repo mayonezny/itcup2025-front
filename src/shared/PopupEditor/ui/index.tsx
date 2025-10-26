@@ -144,10 +144,10 @@ function algTemplate(): BuiltRule {
   return {
     expression: [
       [
-        { name: 'amount', type: 'float', inversion: false, operator: '>', value: '10.0' },
+        { name: 'amount', type: 'double', inversion: false, operator: '>', value: '10.0' },
         {
           name: 'timestamp',
-          type: 'time',
+          type: 'timestamp',
           inversion: true,
           operator: 'between',
           value: '00:00:00-12:00:00',

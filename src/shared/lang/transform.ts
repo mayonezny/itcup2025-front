@@ -1,7 +1,7 @@
+import type { FieldType } from '../field-types';
 import type { Conjunction, Disjunction, Model, Predicate } from './generated/ast';
 
 type Op = '>=' | '>' | '<=' | '<' | '=' | 'between';
-type ValueType = 'float' | 'time';
 
 export function modelToJson(model: Model) {
   const expression = disjunctionToArray(model.expression);
@@ -43,7 +43,7 @@ function predicateToJson(p: Predicate, outerNot = false) {
       type: t,
       inversion: outerNot || Boolean(p.neg), // NOT или NOT BETWEEN
       operator: 'between' as const,
-      value: t === 'float' ? `${toFloat(a)}-${toFloat(b)}` : `${a}-${b}`,
+      value: t === 'double' ? `${toFloat(a)}-${toFloat(b)}` : `${a}-${b}`,
     };
   } else {
     const v = getValue(p.value);
@@ -53,14 +53,15 @@ function predicateToJson(p: Predicate, outerNot = false) {
       type: t,
       inversion: outerNot,
       operator: (opTok || '=') as Op,
-      value: t === 'float' ? toFloat(v) : v,
+      value: t === 'double' ? toFloat(v) : v,
     };
   }
 }
 
 /* helpers */
 const getValue = (n: string | undefined) => String(n ?? '');
-const valueType = (s: string): ValueType => (/^\d{2}:\d{2}:\d{2}$/.test(s) ? 'time' : 'float');
+const valueType = (s: string): FieldType =>
+  /^\d{2}:\d{2}:\d{2}$/.test(s) ? 'timestamp' : 'double';
 const toFloat = (s: string) => (/\./.test(s) ? s : `${s}.0`);
 const hasBetween = (p: Predicate) =>
   // в AST от infer будет поле, связанное с веткой BETWEEN; проверяем наличие a/b
