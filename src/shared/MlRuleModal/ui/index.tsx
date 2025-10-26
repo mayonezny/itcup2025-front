@@ -8,19 +8,19 @@ import './ml-rule-modal.scss';
 // ✅ добавь утилиту нормализации
 function normalizeInitial(initial?: Partial<MlRule>): MlRule {
   return {
-    ruleId: initial?.ruleId ?? '',
+    rule_id: initial?.rule_id ?? '',
     name: initial?.name ?? '',
     description: initial?.description ?? '',
-    modelConfig: {
-      modelName: initial?.modelConfig?.modelName ?? '',
-      inputFeatures: Array.isArray(initial?.modelConfig?.inputFeatures)
-        ? initial!.modelConfig!.inputFeatures
+    model_config: {
+      model_name: initial?.model_config?.model_name ?? '',
+      input_features: Array.isArray(initial?.model_config?.input_features)
+        ? initial!.model_config!.input_features
         : [],
     },
-    riskRange: {
-      min: typeof initial?.riskRange?.min === 'number' ? initial!.riskRange!.min : 0,
-      max: typeof initial?.riskRange?.max === 'number' ? initial!.riskRange!.max : 0.5,
-      maxInclusive: Boolean(initial?.riskRange?.maxInclusive),
+    risk_range: {
+      min: typeof initial?.risk_range?.min === 'number' ? initial!.risk_range!.min : 0,
+      max: typeof initial?.risk_range?.max === 'number' ? initial!.risk_range!.max : 0.5,
+      max_inclusive: Boolean(initial?.risk_range?.max_inclusive),
     },
   };
 }
@@ -47,19 +47,19 @@ export function MlRuleModal({
   const draft = MlRuleDrafts.get(ruleKey);
 
   // ✅ посев из draft > base
-  const [ruleId, setRuleId] = useState(draft?.ruleId ?? base.ruleId);
+  const [rule_id, setRuleId] = useState(draft?.rule_id ?? base.rule_id);
   const [name, setName] = useState(draft?.name ?? base.name);
   const [description, setDescription] = useState(draft?.description ?? base.description);
-  const [modelName, setModelName] = useState(
-    draft?.modelConfig?.modelName ?? base.modelConfig.modelName,
+  const [model_name, setModelName] = useState(
+    draft?.model_config?.model_name ?? base.model_config.model_name,
   );
   const [features, setFeatures] = useState<string[]>(
-    draft?.modelConfig?.inputFeatures ?? base.modelConfig.inputFeatures,
+    draft?.model_config?.input_features ?? base.model_config.input_features,
   );
-  const [min, setMin] = useState<number>(draft?.riskRange?.min ?? base.riskRange.min);
-  const [max, setMax] = useState<number>(draft?.riskRange?.max ?? base.riskRange.max);
+  const [min, setMin] = useState<number>(draft?.risk_range?.min ?? base.risk_range.min);
+  const [max, setMax] = useState<number>(draft?.risk_range?.max ?? base.risk_range.max);
   const [maxIncl, setMaxIncl] = useState<boolean>(
-    draft?.riskRange?.maxInclusive ?? base.riskRange.maxInclusive,
+    draft?.risk_range?.max_inclusive ?? base.risk_range.max_inclusive,
   );
   const [saving, setSaving] = useState(false);
 
@@ -70,36 +70,36 @@ export function MlRuleModal({
     }
     const d = MlRuleDrafts.get(ruleKey);
     const b = normalizeInitial(initial);
-    setRuleId(d?.ruleId ?? b.ruleId);
+    setRuleId(d?.rule_id ?? b.rule_id);
     setName(d?.name ?? b.name);
     setDescription(d?.description ?? b.description);
-    setModelName(d?.modelConfig?.modelName ?? b.modelConfig.modelName);
-    setFeatures(d?.modelConfig?.inputFeatures ?? b.modelConfig.inputFeatures);
-    setMin(d?.riskRange?.min ?? b.riskRange.min);
-    setMax(d?.riskRange?.max ?? b.riskRange.max);
-    setMaxIncl(d?.riskRange?.maxInclusive ?? b.riskRange.maxInclusive);
+    setModelName(d?.model_config?.model_name ?? b.model_config.model_name);
+    setFeatures(d?.model_config?.input_features ?? b.model_config.input_features);
+    setMin(d?.risk_range?.min ?? b.risk_range.min);
+    setMax(d?.risk_range?.max ?? b.risk_range.max);
+    setMaxIncl(d?.risk_range?.max_inclusive ?? b.risk_range.max_inclusive);
   }, [open, ruleKey, initial]);
 
   // автосохранение конкретного ruleKey
   useEffect(() => {
     MlRuleDrafts.set(ruleKey, {
-      ruleId,
+      rule_id,
       name,
       description,
-      modelConfig: { modelName, inputFeatures: features },
-      riskRange: { min, max, maxInclusive: maxIncl },
+      model_config: { model_name, input_features: features },
+      risk_range: { min, max, max_inclusive: maxIncl },
     });
-  }, [ruleKey, ruleId, name, description, modelName, features, min, max, maxIncl]);
+  }, [ruleKey, rule_id, name, description, model_name, features, min, max, maxIncl]);
 
   const errors = useMemo(() => {
     const e: string[] = [];
-    if (!ruleId.trim()) {
+    if (!rule_id.trim()) {
       e.push('rule_id обязателен');
     }
     if (!name.trim()) {
       e.push('name обязателен');
     }
-    if (!modelName.trim()) {
+    if (!model_name.trim()) {
       e.push('model_name обязателен');
     }
     if (min < 0 || min > 1) {
@@ -112,7 +112,7 @@ export function MlRuleModal({
       e.push('risk.min должен быть < risk.max');
     }
     return e;
-  }, [ruleId, name, modelName, min, max]);
+  }, [rule_id, name, model_name, min, max]);
 
   const save = () => {
     if (errors.length) {
@@ -127,11 +127,11 @@ export function MlRuleModal({
     setSaving(true);
     try {
       const out: MlRule = {
-        ruleId: ruleId.trim(),
+        rule_id: rule_id.trim(),
         name: name.trim(),
         description: description.trim(),
-        modelConfig: { modelName: modelName.trim(), inputFeatures: features },
-        riskRange: { min, max, maxInclusive: maxIncl },
+        model_config: { model_name: model_name.trim(), input_features: features },
+        risk_range: { min, max, max_inclusive: maxIncl },
       };
       onSave(out);
       if (clearDraftOnSave) {
@@ -153,7 +153,7 @@ export function MlRuleModal({
       <Modal.Body>
         <div className="ml-form">
           <label>rule_id</label>
-          <Input value={ruleId} onChange={(v) => setRuleId(String(v))} />
+          <Input value={rule_id} onChange={(v) => setRuleId(String(v))} />
 
           <label>name</label>
           <Input value={name} onChange={(v) => setName(String(v))} />
@@ -167,7 +167,7 @@ export function MlRuleModal({
           />
 
           <label>model_name</label>
-          <Input value={modelName} onChange={(v) => setModelName(String(v))} />
+          <Input value={model_name} onChange={(v) => setModelName(String(v))} />
 
           <label>input_features</label>
           <TagPicker

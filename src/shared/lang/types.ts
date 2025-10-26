@@ -21,20 +21,20 @@ export interface BuiltRule {
 }
 
 export interface BuiltMlRule {
-  ruleId: string;
+  rule_id: string;
   name: string;
   description: string;
-  modelConfig: ModelConfig;
-  riskRange: RiskRange;
+  model_config: ModelConfig;
+  risk_range: RiskRange;
 }
 
 export interface ModelConfig {
-  modelName: string;
-  inputFeatures: string[];
+  model_name: string;
+  input_features: string[];
 }
 
 export interface RiskRange {
   min: number;
   max: number;
-  maxInclusive: boolean;
+  max_inclusive: boolean;
 }

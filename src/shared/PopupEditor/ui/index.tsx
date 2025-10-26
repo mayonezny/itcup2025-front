@@ -159,10 +159,10 @@ function algTemplate(): BuiltRule {
 }
 function mlTemplate(): BuiltMlRule {
   return {
-    ruleId: 'ml_rule_low_risk',
+    rule_id: 'ml_rule_low_risk',
     name: 'Низкий риск',
     description: 'Вероятность мошенничества ниже 0.45 — транзакция не фрод',
-    modelConfig: { modelName: 'fraud_model_v1.pkl', inputFeatures: ['timestamp', 'amount'] },
-    riskRange: { min: 0.0, max: 0.45, maxInclusive: false },
+    model_config: { model_name: 'fraud_model_v1.pkl', input_features: ['timestamp', 'amount'] },
+    risk_range: { min: 0.0, max: 0.45, max_inclusive: false },
   };
 }

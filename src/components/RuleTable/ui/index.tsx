@@ -20,7 +20,7 @@ export const RuleTable = () => {
         </div>
       ) : (
         rules.map((row, i) =>
-          row.isActive ? (
+          row.is_active ? (
             <React.Fragment key={row.id}>
               <RuleElement {...row} />
               {i < rules.length - 1 && <LinedText As="h4">AND</LinedText>}
@@ -34,10 +34,10 @@ export const RuleTable = () => {
         state={'new'}
         id={rules ? rules.length + 1 : 0}
         priority={1}
-        isActive={true}
-        filterType={'alg'}
+        is_active={true}
+        filter_type={'alg'}
         action={''}
-        ruleValue={{
+        rule_value={{
           expression: [
             [
               { name: 'amount', type: 'string', inversion: false, operator: '>', value: '10.0' },

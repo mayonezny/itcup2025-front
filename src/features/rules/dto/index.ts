@@ -2,10 +2,10 @@ import type { FilterType, RuleValue } from '../types';
 
 export interface RuleObject {
   id: number;
-  isActive: boolean;
-  filterType: FilterType;
+  is_active: boolean;
+  filter_type: FilterType;
   action: string;
-  ruleValue: RuleValue;
+  rule_value: RuleValue;
   priority: number;
 }
 

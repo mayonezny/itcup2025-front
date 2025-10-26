@@ -1,10 +1,10 @@
 // src/shared/ml-rule-drafts.ts
 export interface MlRule {
-  ruleId: string;
+  rule_id: string;
   name: string;
   description: string;
-  modelConfig: { modelName: string; inputFeatures: string[] };
-  riskRange: { min: number; max: number; maxInclusive: boolean };
+  model_config: { model_name: string; input_features: string[] };
+  risk_range: { min: number; max: number; max_inclusive: boolean };
 }
 
 const LS_KEY = 'ml-rule-drafts:v1';

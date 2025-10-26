@@ -51,10 +51,10 @@ export const RuleElement: React.FC<
   RuleObject & { isEditable?: boolean; isNew?: boolean; state?: ElemState }
 > = ({
   id,
-  isActive,
-  filterType = 'alg',
+  is_active,
+  filter_type = 'alg',
   action,
-  ruleValue,
+  rule_value,
   priority,
   isEditable,
   isNew,
@@ -63,9 +63,9 @@ export const RuleElement: React.FC<
   const dispatch = useAppDispatch();
   const [elemState, setElemState] = React.useState<ElemState>(state);
   const [editable, setEditable] = React.useState<boolean>(Boolean(isEditable));
-  const [ft, setFt] = React.useState<FilterType>(filterType);
+  const [ft, setFt] = React.useState<FilterType>(filter_type);
   const [act, setAct] = React.useState<string>(action);
-  const [val, setVal] = React.useState<RuleValue>(ruleValue);
+  const [val, setVal] = React.useState<RuleValue>(rule_value);
   const [submitErr, setSubmitErr] = React.useState<string | undefined>(undefined);
   const [currentRule, setCurrentRule] = useState<BuiltRule | BuiltMlRule | undefined>(undefined);
 
@@ -105,10 +105,10 @@ export const RuleElement: React.FC<
       setSubmitErr(undefined);
       const payload: RuleObject = {
         id,
-        isActive,
-        filterType: ft,
+        is_active,
+        filter_type: ft,
         action: actFor(ft, act),
-        ruleValue: val,
+        rule_value: val,
         priority,
       };
 
@@ -129,14 +129,17 @@ export const RuleElement: React.FC<
       setSubmitErr(undefined);
       const payload: RuleObject = {
         id,
-        isActive,
-        filterType: ft,
+        is_active,
+        filter_type: ft,
         action: actFor(ft, act),
-        ruleValue: val,
+        rule_value: val,
         priority,
       };
       dispatch(
-        updateRuleLoc({ id, changes: { filterType: ft, action: actFor(ft, act), ruleValue: val } }),
+        updateRuleLoc({
+          id,
+          changes: { filter_type: ft, action: actFor(ft, act), rule_value: val },
+        }),
       );
       dispatch(updateRule({ rule: payload, login: LOGIN }));
       setEditable(false);
