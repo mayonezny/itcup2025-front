@@ -108,6 +108,9 @@
   display: flex;
   align-items: center;
 }
+.rs-picker-clean {
+  display: none !important;
+}
 .rs-picker-toggle {
   padding: 0 8px !important;
 }

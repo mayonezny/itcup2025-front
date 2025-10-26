@@ -27,6 +27,8 @@ import './rule-builder-modal.scss';
 
 import { Plus, SquarePlus, Trash2 } from 'lucide-react';
 
+import { FIELD_TYPES } from '@/shared/field-types';
+
 // --- типы как у тебя (Operator/ValueType/JsonPredicate/.../BuiltRule) ---
 
 export interface RuleDictionaries {
@@ -89,7 +91,7 @@ export function RuleBuilderModal({
   const isInvalid = errors.length > 0;
 
   function blankPredicate(): JsonPredicate {
-    return { name: '', type: 'float', inversion: false, operator: '>=', value: '' };
+    return { name: '', type: 'string', inversion: false, operator: '>=', value: '' };
   }
 
   // ... твои addAnd/addOr/removePredicate/updatePredicate — без изменений ...
@@ -152,39 +154,63 @@ export function RuleBuilderModal({
     isExclusion = false,
   ) {
     const set = isExclusion ? setExclusion : setExpression;
-    const state = isExclusion ? exclusion : expression;
-    const next = state.map((g, gi) =>
-      gi !== groupIdx
-        ? g
-        : g.map((p, pi) => {
-            if (pi !== termIdx) {
-              return p;
-            }
-            const updated: JsonPredicate = { ...p, [key]: value };
-            // Бизнес-правила: если type=time → operator=between и value → маска A-B
-            if (key === 'type') {
-              if (value === 'time') {
-                updated.operator = 'between';
-                // если не похоже на диапазон, сбросим value
-                if (!/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(updated.value)) {
-                  updated.value = '';
-                }
-              } else {
-                // float — если был between, можно оставить, но чаще НЕ between
-                if (updated.operator === 'between') {
+
+    set((prev) => {
+      const state = isExclusion ? exclusion : expression; // можно и prev, если вынесешь оба в один set
+      const base = isExclusion ? (prev as Expression) : (prev as Expression);
+
+      const next = base.map((g, gi) =>
+        gi !== groupIdx
+          ? g
+          : g.map((p, pi) => {
+              if (pi !== termIdx) {
+                return p;
+              }
+
+              const updated: JsonPredicate = { ...p, [key]: value };
+
+              // Если сменили NAME — вычисляем тип и чиним operator/value за один проход
+              if (key === 'name') {
+                const name = String(value || '');
+                const t = (FIELD_TYPES.get(name) || 'string') as ValueType;
+                updated.name = name;
+                updated.type = t;
+
+                if (t === 'timestamp') {
+                  updated.operator = 'between';
+                  if (!/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(updated.value)) {
+                    updated.value = '';
+                  }
+                } else if (updated.operator === 'between') {
                   updated.operator = '>=';
                   updated.value = '';
                 }
               }
-            }
-            // Если operator сменился на between — обнулим value под диапазон
-            if (key === 'operator' && value === 'between') {
-              updated.value = '';
-            }
-            return updated;
-          }),
-    );
-    set(next);
+
+              // Если явно сменили TYPE (на случай будущего включения селекта типов)
+              if (key === 'type') {
+                if (value === 'timestamp') {
+                  updated.operator = 'between';
+                  if (!/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(updated.value)) {
+                    updated.value = '';
+                  }
+                } else if (updated.operator === 'between') {
+                  updated.operator = '>=';
+                  updated.value = '';
+                }
+              }
+
+              // Если operator стал between — подготовим value
+              if (key === 'operator' && value === 'between') {
+                updated.value = '';
+              }
+
+              return updated;
+            }),
+      );
+
+      return next;
+    });
   }
 
   return (
@@ -319,7 +345,6 @@ function PredicateRow({
   // для time — редактор диапазона "HH:MM:SS-HH:MM:SS"
   const isBetween = pred.operator === 'between';
 
-  const isTime = pred.type === 'time';
   // безопасный фолбэк операторов: [] если ключа нет
   const ops: Operator[] = dicts.operatorsByType[pred.type] ?? ['>=', '>', '<=', '<', '='];
 
@@ -330,7 +355,8 @@ function PredicateRow({
         data={dicts.names.map((n) => ({ label: n, value: n }))}
         value={pred.name || undefined}
         onChange={(v) => {
-          onChange('name', v ?? '');
+          const name = v ?? '';
+          onChange('name', name);
         }}
         placeholder="name"
         style={{ width: 180 }}
@@ -341,29 +367,25 @@ function PredicateRow({
       <SelectPicker
         data={dicts.valueTypes.map((t) => ({ label: t, value: t }))}
         value={pred.type}
-        onChange={(v) => onChange('type', (v ?? 'float') as ValueType)}
         style={{ width: 120 }}
+        disabled
       />
       {/* operator */}
       <SelectPicker
         data={ops.map((o) => ({ label: o, value: o })) ?? ''}
         value={pred.operator}
         onChange={(v) => onChange('operator', (v ?? ops[0] ?? '>=') as Operator)}
-        style={{ width: 130 }}
-        disabled={isTime} // по ТЗ для time — только between
+        style={{ width: 130 }} // по ТЗ для time — только between
       />
 
       {/* value */}
-      {isTime && isBetween ? (
-        <TimeRangeInput value={pred.value} onChange={(v) => onChange('value', v)} />
-      ) : (
-        <Input
-          placeholder="value"
-          value={pred.value}
-          onChange={(v) => onChange('value', String(v))}
-          style={{ width: 220 }}
-        />
-      )}
+
+      <Input
+        placeholder="value"
+        value={pred.value}
+        onChange={(v) => onChange('value', String(v))}
+        style={{ width: 220 }}
+      />
 
       {/* inversion */}
       <Checkbox checked={pred.inversion} onChange={(_, checked) => onChange('inversion', checked)}>
@@ -443,45 +465,6 @@ function validateRule(expr: Expression, excl: Expression): string[] {
       }
       if (!p.value) {
         errs.push(`Не заполнен value (группа ${gi + 1}, терм ${ti + 1})`);
-      }
-
-      if (p.type === 'time') {
-        if (p.operator !== 'between') {
-          errs.push(`Для типа time оператор всегда BETWEEN (группа ${gi + 1}, терм ${ti + 1})`);
-        }
-        if (p.value && !/^\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}$/.test(p.value)) {
-          errs.push(
-            `Некорректный формат времени HH:MM:SS-HH:MM:SS (группа ${gi + 1}, терм ${ti + 1})`,
-          );
-        } else if (p.value) {
-          const [A, B] = p.value.split('-');
-          if (!isTimeLt(A, B)) {
-            errs.push(
-              `Левая граница времени должна быть меньше правой (группа ${gi + 1}, терм ${ti + 1})`,
-            );
-          }
-        }
-      } else {
-        // float
-        if (p.operator === 'between') {
-          // допустим и между числами "a-b"
-          if (!/^\d+(\.\d+)?-\d+(\.\d+)?$/.test(p.value)) {
-            errs.push(
-              `Для float BETWEEN ожидается "a-b" (числа) (группа ${gi + 1}, терм ${ti + 1})`,
-            );
-          } else {
-            const [a, b] = p.value.split('-').map(Number);
-            if (!(a < b)) {
-              errs.push(
-                `Для float BETWEEN левый операнд должен быть < правого (группа ${gi + 1}, терм ${ti + 1})`,
-              );
-            }
-          }
-        } else {
-          if (!/^\d+(\.\d+)?$/.test(p.value)) {
-            errs.push(`Для float ожидается число (группа ${gi + 1}, терм ${ti + 1})`);
-          }
-        }
       }
     });
   };

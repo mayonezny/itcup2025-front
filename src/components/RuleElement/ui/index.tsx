@@ -87,8 +87,11 @@ export const RuleElement: React.FC<
     names,
     valueTypes: ['string', 'timestamp', 'double', 'boolean', 'integer'],
     operatorsByType: {
-      float: ['>=', '>', '<=', '<', '='],
-      time: ['between'],
+      double: ['>=', '>', '<=', '<', '='],
+      string: ['='],
+      boolean: ['='],
+      integer: ['>=', '>', '<=', '<', '='],
+      timestamp: ['>=', '>', '<=', '<', '='],
     },
   };
 

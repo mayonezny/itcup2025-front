@@ -1,6 +1,8 @@
+import type { FieldType } from '../field-types';
+
 // src/shared/lang/types.ts
 export type Operator = '>=' | '>' | '<=' | '<' | '=' | 'between';
-export type ValueType = 'float' | 'time';
+export type ValueType = FieldType;
 
 export interface JsonPredicate {
   name: string; // lowercased

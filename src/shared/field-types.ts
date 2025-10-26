@@ -1,4 +1,4 @@
-type FieldType = 'string' | 'timestamp' | 'double' | 'integer' | 'boolean';
+export type FieldType = 'string' | 'timestamp' | 'double' | 'integer' | 'boolean';
 
 export const FIELD_TYPES = new Map<string, FieldType>([
   ['transaction_id', 'string'],
@@ -10,8 +10,6 @@ export const FIELD_TYPES = new Map<string, FieldType>([
   ['merchant_category', 'string'],
   ['location', 'string'],
   ['device_used', 'string'],
-  ['is_fraud', 'boolean'],
-  ['fraud_type', 'string'],
   ['time_since_last_transaction', 'double'],
   ['spending_deviation_score', 'double'],
   ['velocity_score', 'integer'],
